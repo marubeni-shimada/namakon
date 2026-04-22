@@ -595,30 +595,27 @@ function onMapMoveEnd() {
   reverseGeocode(c.lat, c.lng);
 }
 
-// 逆ジオコーディング（座標→住所）国土地理院API
+// 逆ジオコーディング（座標→住所）HeartRails Geo API
 async function reverseGeocode(lat, lng) {
   try {
     const res  = await fetch(
-      `https://mreversegeocoder.gsi.go.jp/reverse-geocoder/LonLatToAddress?lat=${lat}&lon=${lng}`
+      `https://geoapi.heartrails.com/api/json?method=searchByGeoLocation&x=${lng}&y=${lat}`
     );
     const data = await res.json();
-    if (data.results) {
-      const r    = data.results;
-      // 都道府県＋市区町村＋町丁目
-      const addr = (r.muniCd ? '' : '') + (r.lv01Nm || '');
-      // 市区町村名はmuniCdから別途取得が必要なため住所テキストを使う
-      const fullAddr = r.lv01Nm || '';
-      if (fullAddr) {
-        document.getElementById("k-address").value = fullAddr;
+    const loc  = data.response?.location?.[0];
+    if (loc) {
+      const addr = (loc.prefecture || '') + (loc.city || '') + (loc.town || '');
+      if (addr) {
+        document.getElementById("k-address").value = addr;
         const confirmEl = document.getElementById("addr-confirm");
-        confirmEl.textContent = "📍 " + fullAddr;
+        confirmEl.textContent = "📍 " + addr;
         confirmEl.classList.add("on");
       }
     }
   } catch { /* 失敗しても続行 */ }
 }
 
-// 住所入力→フォワードジオコーディング（住所→座標）国土地理院API
+// 住所入力→候補表示 HeartRails Express API（番地対応）
 function onAddressInput(value) {
   clearTimeout(geocodeTimer);
   if (!value || value.length < 3) {
@@ -631,10 +628,30 @@ function onAddressInput(value) {
 async function forwardGeocode(query) {
   try {
     const res  = await fetch(
-      `https://msearch.gsi.go.jp/address-search/AddressSearch?q=${encodeURIComponent(query)}`
+      `https://geoapi.heartrails.com/api/json?method=searchByPostal&postal=${encodeURIComponent(query)}`
     );
-    const data = await res.json();
-    renderSuggestions(data);
+    // 郵便番号以外はaddress-search APIを使う
+    const isPostal = /^\d{3}-?\d{4}$/.test(query.trim());
+    if (isPostal) {
+      const data = await res.json();
+      const locs = data.response?.location || [];
+      renderSuggestions(locs.map(l => ({
+        name: (l.prefecture || '') + (l.city || '') + (l.town || ''),
+        lat:  parseFloat(l.y),
+        lng:  parseFloat(l.x),
+      })));
+    } else {
+      // 住所テキスト検索は国土地理院を併用
+      const r2   = await fetch(
+        `https://msearch.gsi.go.jp/address-search/AddressSearch?q=${encodeURIComponent(query)}`
+      );
+      const data2 = await r2.json();
+      renderSuggestions((data2 || []).slice(0, 6).map(r => ({
+        name: r.properties.title,
+        lat:  r.geometry.coordinates[1],
+        lng:  r.geometry.coordinates[0],
+      })));
+    }
   } catch { /* 失敗しても続行 */ }
 }
 
@@ -643,17 +660,12 @@ function renderSuggestions(results) {
   if (!results || !results.length) { el.style.display = "none"; return; }
 
   el.style.display = "block";
-  el.innerHTML = results.slice(0, 5).map((r) => {
-    const name = r.properties.title;
-    const lng  = r.geometry.coordinates[0];
-    const lat  = r.geometry.coordinates[1];
-    return `
-    <div onclick="selectSuggestion(${lat},${lng},'${esc(name)}')"
+  el.innerHTML = results.map((r) => `
+    <div onclick="selectSuggestion(${r.lat},${r.lng},'${esc(r.name)}')"
       style="padding:11px 13px;font-size:14px;border-bottom:1px solid #F0F0F0;cursor:pointer;color:#1A1A1A;"
       ontouchstart="this.style.background='#F0FBF5'" ontouchend="this.style.background=''">
-      ${esc(name)}
-    </div>`;
-  }).join("");
+      ${esc(r.name)}
+    </div>`).join("");
 }
 
 function selectSuggestion(lat, lng, name) {
