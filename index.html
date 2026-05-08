@@ -158,7 +158,28 @@ select{
 .site-item.on .site-dot{background:#06C755;border-color:#06C755}
 .site-name{font-size:14px;font-weight:600}
 .site-addr{font-size:12px;color:#888;margin-top:2px}
-
+  
+/* ===== 配合番号(3分割入力) ===== */
+.mix-num-wrap{
+  display:flex;
+  align-items:center;
+  gap:8px;
+}
+.mix-num-wrap input{
+  width:60px;
+  text-align:center;
+  font-size:18px;
+  font-weight:700;
+  letter-spacing:1px;
+  padding:11px 6px;
+}
+.mix-sep{
+  font-size:20px;
+  font-weight:700;
+  color:#888;
+  user-select:none;
+}
+  
 /* ===== 条件表示 ===== */
 .extra{display:none;margin-top:12px}
 .extra.on{display:block}
@@ -245,7 +266,7 @@ select{
 .spinner.red{border-top-color:#E53935}
 @keyframes spin{to{transform:rotate(360deg)}}
 .overlay-text{font-size:14px;color:#555;font-weight:500}
-
+  
 /* ===== トースト ===== */
 .toast{
   position:fixed;bottom:90px;
@@ -397,7 +418,13 @@ select{
     <div class="row2">
       <div class="field">
         <div class="label">配合番号 <span class="req">必須</span></div>
-        <input type="text" id="y-mix-num" placeholder="例: 21-15-20">
+        <div class="mix-num-wrap">
+          <input type="tel" id="y-mix-num-1" maxlength="2" inputmode="numeric" pattern="[0-9]*" oninput="onMixInput(this, 'y-mix-num-2')">
+          <span class="mix-sep">-</span>
+          <input type="tel" id="y-mix-num-2" maxlength="2" inputmode="numeric" pattern="[0-9]*" oninput="onMixInput(this, 'y-mix-num-3')">
+          <span class="mix-sep">-</span>
+          <input type="tel" id="y-mix-num-3" maxlength="2" inputmode="numeric" pattern="[0-9]*" oninput="onMixInput(this, null)">
+        </div>
       </div>
       <div class="field">
         <div class="label">数量 <span class="req">必須</span></div>
@@ -868,9 +895,18 @@ async function submitYoyaku() {
   if (!selectedSite)               { toast("現場を選択してください"); return; }
   if (!val("y-date"))              { toast("配送希望日を入力してください"); return; }
   if (!val("y-time"))              { toast("納入時間を選択してください"); return; }
-  if (!val("y-mix-num"))           { toast("配合番号を入力してください"); return; }
   if (!chipVal("chips-vehicle"))   { toast("車種を選択してください"); return; }
   if (!chipVal("chips-method"))    { toast("打設方法を選択してください"); return; }
+
+  // 配合番号(3分割)
+  const mixNum1 = val("y-mix-num-1");
+  const mixNum2 = val("y-mix-num-2");
+  const mixNum3 = val("y-mix-num-3");
+  if (!mixNum1 || !mixNum2 || !mixNum3) {
+    toast("配合番号を全て入力してください");
+    return;
+  }
+  const mixNumber = `${mixNum1}-${mixNum2}-${mixNum3}`;
 
   const mixType = chipVal("chips-mix-type");
   const mixSpec = val("y-mix-spec");
@@ -891,7 +927,7 @@ async function submitYoyaku() {
     deliveryTime: val("y-time"),
     specTime:    val("y-spec-time"),
     vehicle:     chipVal("chips-vehicle"),
-    mixNumber:   val("y-mix-num"),
+    mixNumber:   mixNumber,
     mixType:     mixType === "指定" ? mixSpec : mixType,
     quantity:    qtyVal,
     method:      chipVal("chips-method"),
@@ -950,6 +986,16 @@ function esc(s)       { return String(s).replace(/&/g,"&amp;").replace(/</g,"&lt
 function loading(show, text = "読み込み中...") {
   document.getElementById("overlay").classList.toggle("on", show);
   document.getElementById("overlay-text").textContent = text;
+}
+
+  // 配合番号の自動フォーカス移動
+function onMixInput(input, nextId) {
+  // 数字以外を除去
+  input.value = input.value.replace(/[^0-9]/g, "");
+  // 2桁入ったら次の枠へジャンプ
+  if (input.value.length >= 2 && nextId) {
+    document.getElementById(nextId).focus();
+  }
 }
 
 function toast(msg) {
