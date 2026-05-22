@@ -420,7 +420,7 @@ select{
         <div class="chip" data-val="小型">小型</div>
         <div class="chip" data-val="中型">中型</div>
         <div class="chip" data-val="大型">大型</div>
-        <div class="chip" data-val="なんでも">なんでも</div>
+        <div class="chip" data-val="指定なし">指定なし</div>
       </div>
     </div>
   </div>
@@ -433,7 +433,7 @@ select{
         <div class="chip" data-val="N">N</div>
         <div class="chip" data-val="BB">BB</div>
         <div class="chip" data-val="H">H</div>
-        <div class="chip" data-val="指定">指定</div>
+        <div class="chip" data-val="その他">その他</div>
       </div>
       <div class="field extra" id="mix-spec-wrap" style="margin-top:10px;margin-bottom:0">
         <input type="text" id="y-mix-spec" placeholder="配合を入力してください">
@@ -485,7 +485,7 @@ select{
         <div class="field">
           <div class="label">カンタブ</div>
           <div class="chips" id="chips-cantab">
-            <div class="chip on" data-val="あり">あり</div>
+            <div class="chip" data-val="あり">あり</div>
             <div class="chip" data-val="なし">なし</div>
           </div>
         </div>
@@ -697,7 +697,7 @@ function setupChips() {
         }
         if (group.id === "chips-mix-type") {
           document.getElementById("mix-spec-wrap")
-            .classList.toggle("on", chip.dataset.val === "指定");
+            .classList.toggle("on", chip.dataset.val === "その他");
         }
       });
     });
@@ -810,7 +810,7 @@ async function submitYoyaku() {
     specTime:    val("y-spec-time"),
     vehicle:     chipVal("chips-vehicle"),
     mixNumber:   mixNumber,
-    mixType:     mixType === "指定" ? mixSpec : mixType,
+    mixType:     mixType === "その他" ? mixSpec : mixType,
     quantity:    qtyVal,
     method:      chipVal("chips-method"),
     test:        chipVal("chips-test") || "なし",
