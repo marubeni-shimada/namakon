@@ -1,0 +1,432 @@
+<!DOCTYPE html>
+<html lang="ja">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width,initial-scale=1">
+<title>受注管理 - 生コン受注</title>
+<style>
+*,*::before,*::after{box-sizing:border-box;margin:0;padding:0}
+html{-webkit-text-size-adjust:100%}
+body{
+  font-family:-apple-system,'Hiragino Sans','Hiragino Kaku Gothic ProN',sans-serif;
+  background:#F2F3F5;
+  color:#1A1A1A;
+  min-height:100vh;
+  padding-bottom:40px;
+}
+
+/* ヘッダー */
+.header{
+  background:#06C755;
+  padding:14px 16px 12px;
+  display:flex;align-items:center;justify-content:space-between;
+  position:sticky;top:0;z-index:100;
+}
+.header-left{display:flex;align-items:center;gap:10px}
+.header-icon{
+  width:34px;height:34px;
+  background:rgba(255,255,255,0.2);
+  border-radius:8px;
+  display:flex;align-items:center;justify-content:center;
+  font-size:18px;
+}
+.header-title{font-size:17px;font-weight:700;color:#fff}
+.header-sub{font-size:11px;color:rgba(255,255,255,0.8);margin-top:1px}
+.header-btn{
+  background:rgba(255,255,255,0.2);
+  color:#fff;
+  border:none;
+  padding:6px 12px;
+  border-radius:6px;
+  font-size:12px;
+  font-weight:600;
+  cursor:pointer;
+}
+.header-btn:active{opacity:.85}
+
+/* フィルター */
+.filter-bar{
+  display:flex;gap:6px;
+  padding:10px 16px;
+  background:#fff;
+  border-bottom:1px solid #E5E7EA;
+  overflow-x:auto;
+  position:sticky;top:60px;z-index:99;
+}
+.filter-chip{
+  padding:6px 14px;
+  border-radius:18px;
+  font-size:12px;font-weight:500;
+  border:1.5px solid #E0E0E0;
+  background:#F7F8FA;color:#555;
+  cursor:pointer;white-space:nowrap;flex-shrink:0;
+  -webkit-tap-highlight-color:transparent;
+}
+.filter-chip.on{background:#06C755;border-color:#06C755;color:#fff}
+
+/* サマリー */
+.summary{
+  display:grid;grid-template-columns:repeat(2,1fr);
+  gap:8px;padding:12px 12px 0;
+}
+.stat{
+  background:#fff;border-radius:10px;
+  padding:10px 14px;
+}
+.stat-label{font-size:11px;color:#888;margin-bottom:3px}
+.stat-val{font-size:22px;font-weight:700;color:#1A1A1A}
+.stat-val span{font-size:12px;font-weight:400;color:#888;margin-left:2px}
+.stat-val.red{color:#E24B4A}
+
+/* カードリスト */
+.list{padding:10px 12px}
+.empty{
+  text-align:center;padding:60px 0;
+  color:#999;font-size:14px;line-height:1.8;
+}
+.card{
+  background:#fff;
+  border:1.5px solid #E5E7EA;
+  border-radius:12px;
+  padding:12px;
+  margin-bottom:8px;
+}
+.card.open{border-color:#06C755}
+.card.done{background:#F7F8FA;opacity:0.85}
+
+.card-top{
+  display:flex;align-items:flex-start;justify-content:space-between;
+  margin-bottom:8px;
+}
+.receipt{font-size:11px;color:#888;margin-bottom:2px}
+.site-name{font-size:14px;font-weight:700;color:#1A1A1A;margin-bottom:2px}
+.company{font-size:11px;color:#666}
+
+.badge{
+  font-size:10px;
+  padding:3px 8px;
+  border-radius:10px;
+  font-weight:600;
+  white-space:nowrap;
+}
+.badge-yoyaku{background:#EAF3DE;color:#3B6D11}
+.badge-kakunin{background:#FAEEDA;color:#854F0B}
+.badge-kakutei{background:#E6F1FB;color:#185FA5}
+.badge-renraku{background:#E1F5EE;color:#0F6E56}
+.badge-henkou{background:#FEDCBD;color:#854F0B}
+.badge-cancel{background:#FADBDA;color:#9B1F1F}
+.badge-hikitoiri{background:#EEEDFE;color:#534AB7;margin-left:4px}
+
+.info-row{
+  display:flex;gap:12px;
+  margin-top:6px;flex-wrap:wrap;align-items:center;
+}
+.info-item{
+  font-size:11px;color:#666;
+  display:flex;align-items:center;gap:3px;
+}
+
+.taiou-mini{
+  display:inline-flex;align-items:center;gap:3px;
+  padding:2px 8px;border-radius:12px;
+  font-size:11px;font-weight:500;
+}
+.taiou-mini.set{background:#E6F1FB;color:#1976D2;border:0.5px solid #1976D2}
+.taiou-mini.empty{background:#F7F8FA;color:#AAA;border:0.5px solid #E0E0E0}
+
+/* 詳細展開 */
+.detail{
+  margin-top:10px;padding-top:10px;
+  border-top:1px solid #EEE;
+  display:none;
+}
+.card.open .detail{display:block}
+.detail-section{
+  font-size:10px;color:#06C755;
+  text-transform:uppercase;letter-spacing:.06em;
+  margin:8px 0 6px;font-weight:700;
+}
+.detail-section:first-child{margin-top:0}
+.detail-grid{
+  display:grid;grid-template-columns:90px 1fr;
+  gap:5px 12px;font-size:12px;
+}
+.detail-label{color:#888}
+.detail-val{color:#1A1A1A;font-weight:500}
+.remarks{
+  margin-top:4px;
+  padding:8px 10px;
+  background:#F7F8FA;
+  border-radius:6px;
+  font-size:12px;line-height:1.6;
+  white-space:pre-wrap;
+}
+
+/* 詳細トグルボタン */
+.toggle-btn{
+  width:100%;
+  padding:7px;
+  margin-top:10px;
+  background:#F7F8FA;
+  border:1px solid #E5E7EA;
+  border-radius:7px;
+  font-size:12px;color:#555;
+  cursor:pointer;font-family:inherit;
+  display:flex;align-items:center;justify-content:center;gap:4px;
+  -webkit-tap-highlight-color:transparent;
+}
+.toggle-btn:active{background:#EAEBEE}
+
+/* 読み取り専用バナー */
+.banner{
+  background:#FFF9E6;
+  border-bottom:1px solid #F5C842;
+  padding:8px 16px;
+  font-size:12px;
+  color:#854F0B;
+  text-align:center;
+  font-weight:500;
+}
+
+/* ローディング */
+.loading{
+  text-align:center;
+  padding:60px 0;
+  color:#999;
+}
+.spinner{
+  display:inline-block;
+  width:32px;height:32px;
+  border:3px solid #E5E7EA;border-top-color:#06C755;
+  border-radius:50%;
+  animation:spin .7s linear infinite;
+  margin-bottom:10px;
+}
+@keyframes spin{to{transform:rotate(360deg)}}
+</style>
+</head>
+<body>
+
+<div class="header">
+  <div class="header-left">
+    <div class="header-icon">📋</div>
+    <div>
+      <div class="header-title">受注管理</div>
+      <div class="header-sub">株式会社 丸紅</div>
+    </div>
+  </div>
+  <button class="header-btn" onclick="loadList()">🔄 更新</button>
+</div>
+
+<div class="banner">
+  📖 閲覧専用モード(編集機能は今後追加予定)
+</div>
+
+<div class="filter-bar" id="filter-bar">
+  <div class="filter-chip on" data-filter="all">すべて</div>
+  <div class="filter-chip" data-filter="予約済">予約済</div>
+  <div class="filter-chip" data-filter="確認中">確認中</div>
+  <div class="filter-chip" data-filter="確定済">確定済</div>
+  <div class="filter-chip" data-filter="連絡済">連絡済</div>
+  <div class="filter-chip" data-filter="変更中">変更中</div>
+  <div class="filter-chip" data-filter="キャンセル">キャンセル</div>
+</div>
+
+<div class="summary">
+  <div class="stat">
+    <div class="stat-label">全予約</div>
+    <div class="stat-val" id="stat-total">-<span>件</span></div>
+  </div>
+  <div class="stat">
+    <div class="stat-label">未確定</div>
+    <div class="stat-val red" id="stat-mikakutei">-<span>件</span></div>
+  </div>
+</div>
+
+<div class="list" id="list">
+  <div class="loading">
+    <div class="spinner"></div>
+    <div>読み込み中...</div>
+  </div>
+</div>
+
+<script>
+const GAS_URL = "https://script.google.com/macros/s/AKfycbyMc1GHyNYu-YxEGiK5y9D3qCHlB8_f50o1XBdmc8rqa24G3_n_GN4hpK4lQ2BGKXMI/exec";
+
+let allYoyaku = [];
+let currentFilter = "all";
+
+document.addEventListener("DOMContentLoaded", () => {
+  setupFilter();
+  loadList();
+});
+
+function setupFilter() {
+  document.querySelectorAll(".filter-chip").forEach(chip => {
+    chip.addEventListener("click", () => {
+      document.querySelectorAll(".filter-chip").forEach(c => c.classList.remove("on"));
+      chip.classList.add("on");
+      currentFilter = chip.dataset.filter;
+      render();
+    });
+  });
+}
+
+async function loadList() {
+  const list = document.getElementById("list");
+  list.innerHTML = '<div class="loading"><div class="spinner"></div><div>読み込み中...</div></div>';
+  
+  try {
+    const res = await fetch(`${GAS_URL}?action=getYoyakuList`);
+    const data = await res.json();
+    allYoyaku = (data.yoyaku || []).reverse(); // 新しい順
+    render();
+  } catch (err) {
+    list.innerHTML = '<div class="empty">読み込みに失敗しました<br>更新ボタンを押してください</div>';
+    console.error(err);
+  }
+}
+
+function render() {
+  const list = document.getElementById("list");
+  let filtered = allYoyaku;
+  if (currentFilter !== "all") {
+    filtered = allYoyaku.filter(y => y.status === currentFilter);
+  }
+  
+  // サマリー更新
+  document.getElementById("stat-total").innerHTML = `${allYoyaku.length}<span>件</span>`;
+  const mikakutei = allYoyaku.filter(y => 
+    y.status === "予約済" || y.status === "確認中" || y.status === "変更中"
+  ).length;
+  document.getElementById("stat-mikakutei").innerHTML = `${mikakutei}<span>件</span>`;
+  
+  if (!filtered.length) {
+    list.innerHTML = '<div class="empty">該当する予約がありません</div>';
+    return;
+  }
+  
+  list.innerHTML = filtered.map((y, i) => buildCard(y, i)).join("");
+}
+
+function buildCard(y, idx) {
+  const statusClass = `badge-${statusToClass(y.status)}`;
+  const isDone = y.status === "連絡済" || y.status === "キャンセル";
+  const isHikitoiri = isPickup(y);
+  const dateStr = formatDate(y.deliveryDate);
+  
+  return `
+    <div class="card ${isDone ? 'done' : ''}" id="card-${idx}">
+      <div class="card-top">
+        <div style="flex:1;min-width:0">
+          <div class="receipt">${esc(y.receipt)}</div>
+          <div class="site-name">${esc(y.siteName)}</div>
+          <div class="company">${esc(y.company)}</div>
+        </div>
+        <div>
+          <span class="badge ${statusClass}">${esc(y.status || '未設定')}</span>
+          ${isHikitoiri ? '<span class="badge badge-hikitoiri">引取り</span>' : ''}
+        </div>
+      </div>
+      
+      <div class="info-row">
+        <div class="info-item">📅 ${esc(dateStr)}</div>
+        <div class="info-item">🕐 ${esc(y.deliveryTime || '')}${y.specTime ? ' ' + esc(y.specTime) : ''}</div>
+        ${y.vehicle ? `<div class="info-item">🚚 ${esc(y.vehicle)}</div>` : ''}
+        <div class="info-item">💧 ${esc(y.quantity || '')} m³</div>
+        <div class="info-item">👤 ${esc(y.staff || '')}</div>
+        <span class="taiou-mini ${y.taiousha ? 'set' : 'empty'}">🎧 ${esc(y.taiousha || '未設定')}</span>
+      </div>
+      
+      <div class="detail">
+        <div class="detail-section">現場情報</div>
+        <div class="detail-grid">
+          <div class="detail-label">住所</div>
+          <div class="detail-val">${esc(y.address || '-')}</div>
+          <div class="detail-label">現場担当</div>
+          <div class="detail-val">${esc(y.sitePerson || '-')}</div>
+          <div class="detail-label">電話番号</div>
+          <div class="detail-val">${esc(y.phone || '-')}</div>
+        </div>
+        
+        <div class="detail-section">配合・施工</div>
+        <div class="detail-grid">
+          <div class="detail-label">配合</div>
+          <div class="detail-val">${esc(y.mix || '-')}</div>
+          ${y.method ? `<div class="detail-label">打設方法</div><div class="detail-val">${esc(y.method)}</div>` : ''}
+          ${y.test ? `<div class="detail-label">現場試験</div><div class="detail-val">${esc(y.test)}</div>` : ''}
+          ${y.testCount ? `<div class="detail-label">テストピース</div><div class="detail-val">${esc(y.testCount)}本</div>` : ''}
+          ${y.cantab ? `<div class="detail-label">カンタブ</div><div class="detail-val">${esc(y.cantab)}</div>` : ''}
+        </div>
+        
+        <div class="detail-section">プラント</div>
+        <div class="detail-grid">
+          <div class="detail-label">会社</div>
+          <div class="detail-val">${esc(y.plant || '未設定')}</div>
+          <div class="detail-label">連絡先</div>
+          <div class="detail-val">${esc(y.plantPhone || '-')}</div>
+        </div>
+        
+        ${y.remarks ? `
+          <div class="detail-section">備考</div>
+          <div class="remarks">${esc(y.remarks)}</div>
+        ` : ''}
+      </div>
+      
+      <button class="toggle-btn" onclick="toggleDetail(${idx})">
+        <span id="toggle-text-${idx}">詳細を見る</span>
+        <span id="toggle-icon-${idx}">▼</span>
+      </button>
+    </div>
+  `;
+}
+
+function toggleDetail(idx) {
+  const card = document.getElementById(`card-${idx}`);
+  const text = document.getElementById(`toggle-text-${idx}`);
+  const icon = document.getElementById(`toggle-icon-${idx}`);
+  card.classList.toggle("open");
+  if (card.classList.contains("open")) {
+    text.textContent = "詳細を閉じる";
+    icon.textContent = "▲";
+  } else {
+    text.textContent = "詳細を見る";
+    icon.textContent = "▼";
+  }
+}
+
+function statusToClass(status) {
+  const map = {
+    "予約済":   "yoyaku",
+    "確認中":   "kakunin",
+    "確定済":   "kakutei",
+    "連絡済":   "renraku",
+    "変更中":   "henkou",
+    "キャンセル": "cancel",
+  };
+  return map[status] || "yoyaku";
+}
+
+function isPickup(y) {
+  // 車種が空、打設方法が空、現場試験が空 → 引取りと判定
+  return !y.vehicle && !y.method && !y.test;
+}
+
+function formatDate(d) {
+  if (!d) return "-";
+  try {
+    const date = new Date(d);
+    if (isNaN(date.getTime())) return String(d);
+    return `${date.getMonth()+1}/${date.getDate()}`;
+  } catch {
+    return String(d);
+  }
+}
+
+function esc(s) {
+  return String(s || "").replace(/&/g,"&amp;").replace(/</g,"&lt;").replace(/>/g,"&gt;");
+}
+</script>
+
+</body>
+</html>
