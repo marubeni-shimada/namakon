@@ -7,7 +7,32 @@
 <style>
 *,*::before,*::after{box-sizing:border-box;margin:0;padding:0}
 html{-webkit-text-size-adjust:100%}
-body{font-family:-apple-system,'Hiragino Sans','Hiragino Kaku Gothic ProN',sans-serif;background:#F2F3F5;color:#1A1A1A;min-height:100vh;padding-bottom:40px}
+body{font-family:-apple-system,'Hiragino Sans','Hiragino Kaku Gothic ProN',sans-serif;background:#F2F3F5;color:#1A1A1A;min-height:100vh;padding-bottom:40px;font-size:14px}
+
+/* PC向け:画面が広いときは文字を少し大きく */
+@media (min-width: 768px){
+  body{font-size:16px}
+  .card{padding:16px}
+  .site-name{font-size:17px !important}
+  .company{font-size:13px !important}
+  .receipt{font-size:13px !important}
+  .info-item{font-size:13px !important}
+  .badge-status{font-size:12px !important;padding:5px 11px !important}
+  .badge-hikitoiri{font-size:12px !important;padding:4px 9px !important}
+  .taiou-mini{font-size:13px !important;padding:3px 10px !important}
+  .detail-section{font-size:11px !important}
+  .detail-grid{font-size:14px !important}
+  .filter-chip{font-size:14px !important;padding:8px 16px !important}
+  .toggle-btn{font-size:14px !important;padding:9px !important}
+  .stat-val{font-size:26px !important}
+  .stat-label{font-size:13px !important}
+  .memo-input{font-size:14px !important}
+  .btn-save{font-size:13px !important;padding:8px 16px !important}
+  .plant-btn{font-size:14px !important;padding:5px 12px !important}
+  .modal{max-width:420px !important}
+  .modal-title{font-size:17px !important}
+  .modal-item{font-size:16px !important;padding:16px !important}
+}
 .header{background:#06C755;padding:14px 16px 12px;display:flex;align-items:center;justify-content:space-between;position:sticky;top:0;z-index:100}
 .header-left{display:flex;align-items:center;gap:10px}
 .header-icon{width:34px;height:34px;background:rgba(255,255,255,0.2);border-radius:8px;display:flex;align-items:center;justify-content:center;font-size:18px}
@@ -32,8 +57,9 @@ body{font-family:-apple-system,'Hiragino Sans','Hiragino Kaku Gothic ProN',sans-
 .card.highlight{border-color:#FF9800;box-shadow:0 0 0 3px rgba(255,152,0,0.2)}
 .card-top{display:flex;align-items:flex-start;justify-content:space-between;margin-bottom:8px}
 .receipt{font-size:11px;color:#888;margin-bottom:2px}
-.site-name{font-size:14px;font-weight:700;color:#1A1A1A;margin-bottom:2px}
-.company{font-size:11px;color:#666}
+.site-name{font-size:15px;font-weight:700;color:#1A1A1A;margin-bottom:2px}
+.company{font-size:12px;color:#666}
+.timestamp{font-size:10px;color:#999;margin-top:4px}
 
 .badge-status{font-size:10px;padding:4px 9px;border-radius:11px;font-weight:600;white-space:nowrap;cursor:pointer;display:inline-flex;align-items:center;gap:3px;border:0.5px solid transparent;-webkit-tap-highlight-color:transparent}
 .badge-status:active{opacity:.8}
@@ -113,6 +139,10 @@ body{font-family:-apple-system,'Hiragino Sans','Hiragino Kaku Gothic ProN',sans-
 .modal-cancel{margin-top:12px;padding:12px;background:#F2F3F5;color:#555;border:none;border-radius:10px;font-size:14px;font-weight:600;cursor:pointer;font-family:inherit;-webkit-tap-highlight-color:transparent;width:100%}
 .modal-cancel:active{opacity:.85}
 
+.modal-search{margin-bottom:10px}
+.modal-search input{width:100%;padding:10px 12px;font-size:14px;color:#1A1A1A;background:#F7F8FA;border:1.5px solid #E5E7EA;border-radius:8px;outline:none;-webkit-appearance:none;appearance:none;font-family:inherit}
+.modal-search input:focus{border-color:#06C755;background:#fff}
+
 .modal-buttons{display:flex;gap:10px;margin-top:16px}
 .modal-btn{flex:1;padding:12px;border:none;border-radius:10px;font-size:15px;font-weight:600;cursor:pointer;font-family:inherit;-webkit-tap-highlight-color:transparent}
 .modal-btn:active{opacity:.85}
@@ -166,6 +196,9 @@ body{font-family:-apple-system,'Hiragino Sans','Hiragino Kaku Gothic ProN',sans-
   <div class="modal">
     <div class="modal-title">プラント会社を選択</div>
     <div class="modal-sub" id="plant-modal-sub"></div>
+    <div class="modal-search">
+      <input type="text" id="plant-search" placeholder="🔍 会社名で検索..." oninput="filterPlants()">
+    </div>
     <div class="modal-list" id="plant-list"></div>
     <button class="modal-cancel" onclick="closePlantModal()">キャンセル</button>
   </div>
@@ -274,6 +307,11 @@ async function loadList() {
           if (card) {
             card.classList.add("highlight");
             card.classList.add("open");
+            // ボタンの表示も「詳細を閉じる」に
+            const text = document.getElementById(`toggle-text-${idx}`);
+            const icon = document.getElementById(`toggle-icon-${idx}`);
+            if (text) text.textContent = "詳細を閉じる";
+            if (icon) icon.textContent = "▲";
             card.scrollIntoView({ behavior: "smooth", block: "center" });
           }
         }
@@ -332,6 +370,7 @@ function buildCard(y, idx) {
   const dateStr = formatDate(y.deliveryDate);
   const timeStr = formatTime(y.deliveryTime);
   const specTimeStr = formatTime(y.specTime);
+  const tsStr = formatTimestamp(y.timestamp);
   const statusLabel = y.status || "未対応";
   
   return `
@@ -341,6 +380,7 @@ function buildCard(y, idx) {
           <div class="receipt">${esc(y.receipt)}</div>
           <div class="site-name">${esc(y.siteName)}</div>
           <div class="company">${esc(y.company)}</div>
+          <div class="timestamp">📥 ${esc(tsStr)}</div>
         </div>
         <div>
           <span class="badge-status ${statusClass}" onclick="openStatusModal(${idx})">
@@ -352,8 +392,6 @@ function buildCard(y, idx) {
       </div>
       
       <div class="info-row">
-        <div class="info-item">📅 ${esc(dateStr)}</div>
-        <div class="info-item">🕐 ${esc(timeStr)}${specTimeStr ? ' ' + esc(specTimeStr) : ''}</div>
         <div class="info-item">👤 ${esc(y.staff || '')}</div>
         <span class="taiou-mini ${y.taiousha ? 'set' : 'empty'}" onclick="openTaiouModal(${idx})">
           🎧 ${esc(y.taiousha || '未設定')}
@@ -362,6 +400,14 @@ function buildCard(y, idx) {
       </div>
       
       <div class="detail">
+        <div class="detail-section">${pickup ? '引取り情報' : '配送情報'}</div>
+        <div class="detail-grid">
+          <div class="detail-label">${pickup ? '引取希望日' : '配送希望日'}</div>
+          <div class="detail-val">📅 ${esc(dateStr)}</div>
+          <div class="detail-label">${pickup ? '引取時間' : '納入時間'}</div>
+          <div class="detail-val">🕐 ${esc(timeStr)}${specTimeStr ? ' ' + esc(specTimeStr) : ''}</div>
+        </div>
+        
         <div class="detail-section">現場情報</div>
         <div class="detail-grid">
           <div class="detail-label">住所</div>
@@ -372,7 +418,7 @@ function buildCard(y, idx) {
           <div class="detail-val">${esc(y.phone || '-')}</div>
         </div>
         
-        <div class="detail-section">${pickup ? '引取り情報' : '配送・施工'}</div>
+        <div class="detail-section">${pickup ? '内容' : '配送・施工'}</div>
         <div class="detail-grid">
           ${!pickup && y.vehicle ? `<div class="detail-label">車種</div><div class="detail-val">🚛 ${esc(y.vehicle)}</div>` : ''}
           <div class="detail-label">数量</div>
@@ -569,19 +615,46 @@ function openPlantModal(idx) {
   currentEditIdx = idx;
   const y = allYoyaku[idx];
   document.getElementById("plant-modal-sub").textContent = `${y.receipt} / ${y.siteName}`;
-  
+  document.getElementById("plant-search").value = "";
+  renderPlantList("");
+  document.getElementById("plant-modal").classList.add("on");
+}
+
+function renderPlantList(searchText) {
+  const idx = currentEditIdx;
+  if (idx === null) return;
+  const y = allYoyaku[idx];
   const listEl = document.getElementById("plant-list");
+  
   if (!plantList.length) {
-    listEl.innerHTML = '<div class="empty">プラント会社が登録されていません</div>';
-  } else {
-    let html = `<div class="modal-item ${!y.plant ? 'current' : ''}" onclick="selectPlant('')">未設定</div>`;
-    html += plantList.map(p =>
-      `<div class="modal-item ${p === y.plant ? 'current' : ''}" onclick="selectPlant('${p.replace(/'/g, "\\'")}')">${esc(p)}</div>`
-    ).join("");
-    listEl.innerHTML = html;
+    listEl.innerHTML = '<div class="empty" style="padding:20px 0">プラント会社が登録されていません</div>';
+    return;
   }
   
-  document.getElementById("plant-modal").classList.add("on");
+  const keyword = (searchText || "").toLowerCase().trim();
+  const filtered = keyword
+    ? plantList.filter(p => String(p).toLowerCase().includes(keyword))
+    : plantList;
+  
+  if (!filtered.length) {
+    listEl.innerHTML = '<div class="empty" style="padding:20px 0">該当する会社がありません</div>';
+    return;
+  }
+  
+  let html = "";
+  // 未設定オプションは検索なしの場合のみ表示
+  if (!keyword) {
+    html += `<div class="modal-item ${!y.plant ? 'current' : ''}" onclick="selectPlant('')">未設定</div>`;
+  }
+  html += filtered.map(p =>
+    `<div class="modal-item ${p === y.plant ? 'current' : ''}" onclick="selectPlant('${p.replace(/'/g, "\\'")}')">${esc(p)}</div>`
+  ).join("");
+  listEl.innerHTML = html;
+}
+
+function filterPlants() {
+  const searchText = document.getElementById("plant-search").value;
+  renderPlantList(searchText);
 }
 
 function closePlantModal() {
@@ -719,6 +792,22 @@ function formatDate(d) {
     const date = new Date(d);
     if (isNaN(date.getTime())) return String(d);
     return `${date.getMonth()+1}/${date.getDate()}`;
+  } catch {
+    return String(d);
+  }
+}
+
+// タイムスタンプ整形(M/D HH:MM)
+function formatTimestamp(d) {
+  if (!d) return "-";
+  try {
+    const date = new Date(d);
+    if (isNaN(date.getTime())) return String(d);
+    const m = date.getMonth()+1;
+    const day = date.getDate();
+    const h = String(date.getHours()).padStart(2,"0");
+    const min = String(date.getMinutes()).padStart(2,"0");
+    return `${m}/${day} ${h}:${min} 受付`;
   } catch {
     return String(d);
   }
