@@ -791,7 +791,9 @@ function formatDate(d) {
   try {
     const date = new Date(d);
     if (isNaN(date.getTime())) return String(d);
-    return `${date.getMonth()+1}/${date.getDate()}`;
+    const weekdays = ["日", "月", "火", "水", "木", "金", "土"];
+    const wd = weekdays[date.getDay()];
+    return `${date.getFullYear()}/${date.getMonth()+1}/${date.getDate()} (${wd})`;
   } catch {
     return String(d);
   }
