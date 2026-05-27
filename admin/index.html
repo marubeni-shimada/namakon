@@ -37,12 +37,16 @@ body{font-family:-apple-system,'Hiragino Sans','Hiragino Kaku Gothic ProN',sans-
 
 .badge-status{font-size:10px;padding:4px 9px;border-radius:11px;font-weight:600;white-space:nowrap;cursor:pointer;display:inline-flex;align-items:center;gap:3px;border:0.5px solid transparent;-webkit-tap-highlight-color:transparent}
 .badge-status:active{opacity:.8}
+.badge-status.empty{background:#F7F8FA;color:#888;border-color:#E0E0E0}
+.badge-status.taiouChu{background:#FAEEDA;color:#854F0B;border-color:#E8C97A}
+.badge-status.renraku{background:#E1F5EE;color:#0F6E56;border-color:#A0D8C5}
+.badge-status.cancel{background:#FADBDA;color:#9B1F1F;border-color:#E89A98}
+/* 旧ステータス互換 */
 .badge-status.yoyaku{background:#EAF3DE;color:#3B6D11;border-color:#C0DD97}
 .badge-status.kakunin{background:#FAEEDA;color:#854F0B;border-color:#E8C97A}
 .badge-status.kakutei{background:#E6F1FB;color:#185FA5;border-color:#B5D4F4}
-.badge-status.renraku{background:#E1F5EE;color:#0F6E56;border-color:#A0D8C5}
 .badge-status.henkou{background:#FEDCBD;color:#854F0B;border-color:#F0B97D}
-.badge-status.cancel{background:#FADBDA;color:#9B1F1F;border-color:#E89A98}
+
 .badge-hikitoiri{font-size:10px;padding:3px 8px;border-radius:10px;font-weight:600;background:#EEEDFE;color:#534AB7;margin-left:4px;border:0.5px solid #C0BAE0}
 .badge-chev{font-size:9px;opacity:0.7}
 
@@ -58,10 +62,15 @@ body{font-family:-apple-system,'Hiragino Sans','Hiragino Kaku Gothic ProN',sans-
 .card.open .detail{display:block}
 .detail-section{font-size:10px;color:#06C755;text-transform:uppercase;letter-spacing:.06em;margin:10px 0 6px;font-weight:700}
 .detail-section:first-child{margin-top:0}
-.detail-grid{display:grid;grid-template-columns:90px 1fr;gap:5px 12px;font-size:12px}
+.detail-grid{display:grid;grid-template-columns:90px 1fr;gap:5px 12px;font-size:12px;align-items:center}
 .detail-label{color:#888}
 .detail-val{color:#1A1A1A;font-weight:500}
 .remarks{margin-top:4px;padding:8px 10px;background:#F7F8FA;border-radius:6px;font-size:12px;line-height:1.6;white-space:pre-wrap}
+
+/* プラント選択ボタン(クリックでモーダル) */
+.plant-btn{display:inline-flex;align-items:center;gap:4px;padding:4px 10px;border-radius:8px;font-size:12px;font-weight:500;cursor:pointer;-webkit-tap-highlight-color:transparent;border:1px solid #E0E0E0;background:#F7F8FA;color:#1A1A1A}
+.plant-btn:active{opacity:.85}
+.plant-btn.empty{color:#888;font-style:italic}
 
 .memo-wrap{margin-top:4px}
 .memo-input{width:100%;min-height:60px;padding:8px 10px;background:#FFFBE6;border:1.5px solid #F5D67A;border-radius:6px;font-size:12px;line-height:1.6;font-family:inherit;resize:vertical;color:#1A1A1A;outline:none}
@@ -100,6 +109,7 @@ body{font-family:-apple-system,'Hiragino Sans','Hiragino Kaku Gothic ProN',sans-
 .modal-item:last-child{margin-bottom:0}
 .modal-item.current{background:#F0FBF5;border-color:#06C755;color:#06C755;font-weight:700}
 .modal-item.current::after{content:"✓";font-size:18px;color:#06C755}
+.modal-item.deprecated{opacity:0.6;color:#888;font-size:13px}
 .modal-cancel{margin-top:12px;padding:12px;background:#F2F3F5;color:#555;border:none;border-radius:10px;font-size:14px;font-weight:600;cursor:pointer;font-family:inherit;-webkit-tap-highlight-color:transparent;width:100%}
 .modal-cancel:active{opacity:.85}
 
@@ -123,7 +133,6 @@ body{font-family:-apple-system,'Hiragino Sans','Hiragino Kaku Gothic ProN',sans-
   <div class="full-overlay-text" id="full-overlay-text">処理中...</div>
 </div>
 
-<!-- 確認モーダル -->
 <div class="modal-overlay" id="confirm-modal">
   <div class="modal">
     <div class="modal-title" id="confirm-title">確認</div>
@@ -135,7 +144,6 @@ body{font-family:-apple-system,'Hiragino Sans','Hiragino Kaku Gothic ProN',sans-
   </div>
 </div>
 
-<!-- ステータス選択モーダル -->
 <div class="modal-overlay" id="status-modal">
   <div class="modal">
     <div class="modal-title">ステータスを選択</div>
@@ -145,13 +153,21 @@ body{font-family:-apple-system,'Hiragino Sans','Hiragino Kaku Gothic ProN',sans-
   </div>
 </div>
 
-<!-- 対応者選択モーダル -->
 <div class="modal-overlay" id="taiou-modal">
   <div class="modal">
     <div class="modal-title">対応者を選択</div>
     <div class="modal-sub" id="taiou-modal-sub"></div>
     <div class="modal-list" id="taiou-list"></div>
     <button class="modal-cancel" onclick="closeTaiouModal()">キャンセル</button>
+  </div>
+</div>
+
+<div class="modal-overlay" id="plant-modal">
+  <div class="modal">
+    <div class="modal-title">プラント会社を選択</div>
+    <div class="modal-sub" id="plant-modal-sub"></div>
+    <div class="modal-list" id="plant-list"></div>
+    <button class="modal-cancel" onclick="closePlantModal()">キャンセル</button>
   </div>
 </div>
 
@@ -172,11 +188,9 @@ body{font-family:-apple-system,'Hiragino Sans','Hiragino Kaku Gothic ProN',sans-
 
 <div class="filter-bar" id="filter-bar">
   <div class="filter-chip on" data-filter="all">すべて</div>
-  <div class="filter-chip" data-filter="予約済">予約済</div>
-  <div class="filter-chip" data-filter="確認中">確認中</div>
-  <div class="filter-chip" data-filter="確定済">確定済</div>
-  <div class="filter-chip" data-filter="連絡済">連絡済</div>
-  <div class="filter-chip" data-filter="変更中">変更中</div>
+  <div class="filter-chip" data-filter="未対応">未対応</div>
+  <div class="filter-chip" data-filter="対応中">対応中</div>
+  <div class="filter-chip" data-filter="顧客連絡済">顧客連絡済</div>
   <div class="filter-chip" data-filter="キャンセル">キャンセル</div>
   <div class="filter-chip" data-filter="引取り">引取り</div>
 </div>
@@ -187,7 +201,7 @@ body{font-family:-apple-system,'Hiragino Sans','Hiragino Kaku Gothic ProN',sans-
     <div class="stat-val" id="stat-total">-<span>件</span></div>
   </div>
   <div class="stat">
-    <div class="stat-label">未確定</div>
+    <div class="stat-label">未対応</div>
     <div class="stat-val red" id="stat-mikakutei">-<span>件</span></div>
   </div>
 </div>
@@ -202,12 +216,15 @@ body{font-family:-apple-system,'Hiragino Sans','Hiragino Kaku Gothic ProN',sans-
 <script>
 const GAS_URL = "https://script.google.com/macros/s/AKfycbyMc1GHyNYu-YxEGiK5y9D3qCHlB8_f50o1XBdmc8rqa24G3_n_GN4hpK4lQ2BGKXMI/exec";
 const TAIOU_LIST = ["松浦", "村上", "小長谷", "川井大輔", "益田桂志", "鈴木悠仁", "青島秀和", "渡邊賢矢"];
-const STATUS_LIST = ["予約済", "確認中", "確定済", "連絡済", "変更中", "キャンセル"];
+// 新ステータス + 旧ステータス互換用
+const STATUS_LIST = ["", "対応中", "顧客連絡済", "キャンセル"];
+const OLD_STATUS_LIST = ["予約済", "確認中", "確定済", "連絡済", "変更中"];
 
 let allYoyaku = [];
+let plantList = [];
 let currentFilter = "all";
 let highlightReceipt = null;
-let currentEditIdx = null; // モーダルで編集中のカードidx
+let currentEditIdx = null;
 
 document.addEventListener("DOMContentLoaded", () => {
   const params = new URLSearchParams(location.search);
@@ -215,13 +232,16 @@ document.addEventListener("DOMContentLoaded", () => {
   
   setupFilter();
   loadList();
+  loadPlants();
   
-  // モーダル外クリックで閉じる
   document.getElementById("status-modal").addEventListener("click", (e) => {
     if (e.target.id === "status-modal") closeStatusModal();
   });
   document.getElementById("taiou-modal").addEventListener("click", (e) => {
     if (e.target.id === "taiou-modal") closeTaiouModal();
+  });
+  document.getElementById("plant-modal").addEventListener("click", (e) => {
+    if (e.target.id === "plant-modal") closePlantModal();
   });
 });
 
@@ -265,19 +285,32 @@ async function loadList() {
   }
 }
 
+async function loadPlants() {
+  try {
+    const res = await fetch(`${GAS_URL}?action=getPlants`);
+    const data = await res.json();
+    plantList = data.plants || [];
+  } catch (err) {
+    console.error("プラント取得失敗:", err);
+  }
+}
+
 function render() {
   const list = document.getElementById("list");
   let filtered = allYoyaku;
   
   if (currentFilter === "引取り") {
     filtered = allYoyaku.filter(y => isPickup(y));
+  } else if (currentFilter === "未対応") {
+    // 空白・予約済(旧)・確認中(旧)・変更中(旧) = 未対応扱い
+    filtered = allYoyaku.filter(y => !y.status || y.status === "予約済" || y.status === "確認中" || y.status === "変更中");
   } else if (currentFilter !== "all") {
     filtered = allYoyaku.filter(y => y.status === currentFilter);
   }
   
   document.getElementById("stat-total").innerHTML = `${allYoyaku.length}<span>件</span>`;
   const mikakutei = allYoyaku.filter(y => 
-    y.status === "予約済" || y.status === "確認中" || y.status === "変更中"
+    !y.status || y.status === "対応中" || y.status === "予約済" || y.status === "確認中" || y.status === "変更中"
   ).length;
   document.getElementById("stat-mikakutei").innerHTML = `${mikakutei}<span>件</span>`;
   
@@ -294,11 +327,12 @@ function render() {
 
 function buildCard(y, idx) {
   const statusClass = `${statusToClass(y.status)}`;
-  const isDone = y.status === "連絡済" || y.status === "キャンセル";
+  const isDone = y.status === "顧客連絡済" || y.status === "キャンセル" || y.status === "連絡済";
   const pickup = isPickup(y);
   const dateStr = formatDate(y.deliveryDate);
   const timeStr = formatTime(y.deliveryTime);
   const specTimeStr = formatTime(y.specTime);
+  const statusLabel = y.status || "未設定";
   
   return `
     <div class="card ${isDone ? 'done' : ''}" id="card-${idx}">
@@ -310,7 +344,7 @@ function buildCard(y, idx) {
         </div>
         <div>
           <span class="badge-status ${statusClass}" onclick="openStatusModal(${idx})">
-            ${esc(y.status || '未設定')}
+            ${esc(statusLabel)}
             <span class="badge-chev">▼</span>
           </span>
           ${pickup ? '<span class="badge-hikitoiri">引取り</span>' : ''}
@@ -320,9 +354,6 @@ function buildCard(y, idx) {
       <div class="info-row">
         <div class="info-item">📅 ${esc(dateStr)}</div>
         <div class="info-item">🕐 ${esc(timeStr)}${specTimeStr ? ' ' + esc(specTimeStr) : ''}</div>
-        ${!pickup && y.vehicle ? `<div class="info-item">🚛 ${esc(y.vehicle)}</div>` : ''}
-        ${pickup && y.shape ? `<div class="info-item">🧱 ${esc(y.shape)}</div>` : ''}
-        <div class="info-item">💧 ${esc(y.quantity || '')} m³</div>
         <div class="info-item">👤 ${esc(y.staff || '')}</div>
         <span class="taiou-mini ${y.taiousha ? 'set' : 'empty'}" onclick="openTaiouModal(${idx})">
           🎧 ${esc(y.taiousha || '未設定')}
@@ -343,6 +374,9 @@ function buildCard(y, idx) {
         
         <div class="detail-section">${pickup ? '引取り情報' : '配送・施工'}</div>
         <div class="detail-grid">
+          ${!pickup && y.vehicle ? `<div class="detail-label">車種</div><div class="detail-val">🚛 ${esc(y.vehicle)}</div>` : ''}
+          <div class="detail-label">数量</div>
+          <div class="detail-val">💧 ${esc(y.quantity || '')} m³</div>
           <div class="detail-label">配合</div>
           <div class="detail-val">${esc(y.mix || '-')}</div>
           ${pickup ? `<div class="detail-label">形状</div><div class="detail-val">${esc(y.shape || '-')}</div>` : ''}
@@ -355,7 +389,12 @@ function buildCard(y, idx) {
         <div class="detail-section">プラント</div>
         <div class="detail-grid">
           <div class="detail-label">会社</div>
-          <div class="detail-val">${esc(y.plant || '未設定')}</div>
+          <div class="detail-val">
+            <span class="plant-btn ${y.plant ? '' : 'empty'}" onclick="openPlantModal(${idx})">
+              🏭 ${esc(y.plant || '未設定')}
+              <span class="badge-chev">▼</span>
+            </span>
+          </div>
           <div class="detail-label">連絡先</div>
           <div class="detail-val">${esc(y.plantPhone || '-')}</div>
         </div>
@@ -397,16 +436,24 @@ function toggleDetail(idx) {
   }
 }
 
-// ステータス選択モーダル
+// ステータスモーダル
 function openStatusModal(idx) {
   currentEditIdx = idx;
   const y = allYoyaku[idx];
   document.getElementById("status-modal-sub").textContent = `${y.receipt} / ${y.siteName}`;
   
   const listEl = document.getElementById("status-list");
-  listEl.innerHTML = STATUS_LIST.map(s =>
-    `<div class="modal-item ${s === y.status ? 'current' : ''}" onclick="selectStatus('${s}')">${s}</div>`
-  ).join("");
+  let html = "";
+  // 新ステータス
+  STATUS_LIST.forEach(s => {
+    const label = s === "" ? "未設定" : s;
+    html += `<div class="modal-item ${s === y.status ? 'current' : ''}" onclick="selectStatus('${s}')">${label}</div>`;
+  });
+  // 旧ステータス(現在のステータスが旧の場合のみ表示)
+  if (OLD_STATUS_LIST.includes(y.status)) {
+    html += `<div class="modal-item current deprecated">${y.status} (旧)</div>`;
+  }
+  listEl.innerHTML = html;
   
   document.getElementById("status-modal").classList.add("on");
 }
@@ -425,9 +472,14 @@ async function selectStatus(newStatus) {
   
   if (y.status === newStatus) return;
   
-  let confirmMsg = `ステータスを「${newStatus}」に変更しますか?`;
-  if (newStatus === "確定済") {
-    confirmMsg = `ステータスを「確定済」に変更しますか?\n\n担当者(${y.staff})にLINE通知が送信されます。`;
+  let confirmMsg;
+  if (newStatus === "") {
+    confirmMsg = `ステータスを「未設定」に戻しますか?`;
+  } else {
+    confirmMsg = `ステータスを「${newStatus}」に変更しますか?`;
+    if (newStatus === "顧客連絡済") {
+      confirmMsg = `ステータスを「顧客連絡済」に変更しますか?\n\n担当者(${y.staff})にLINE通知が送信されます。`;
+    }
   }
   
   const ok = await customConfirm(confirmMsg);
@@ -447,7 +499,7 @@ async function selectStatus(newStatus) {
     const result = await res.json();
     if (result.status === "ok") {
       allYoyaku[idx].status = newStatus;
-      toast(newStatus === "確定済" ? "確定済に変更し、担当者へ通知しました" : `「${newStatus}」に変更しました`);
+      toast(newStatus === "顧客連絡済" ? "顧客連絡済に変更し、担当者へ通知しました" : (newStatus === "" ? "未設定に戻しました" : `「${newStatus}」に変更しました`));
       render();
     } else {
       toast("更新失敗: " + (result.message || "不明"), true);
@@ -460,7 +512,7 @@ async function selectStatus(newStatus) {
   }
 }
 
-// 対応者選択モーダル
+// 対応者モーダル
 function openTaiouModal(idx) {
   currentEditIdx = idx;
   const y = allYoyaku[idx];
@@ -505,6 +557,68 @@ async function selectTaiou(newTaiou) {
     if (result.status === "ok") {
       allYoyaku[idx].taiousha = newTaiou;
       toast(newTaiou ? `対応者を「${newTaiou}」に設定` : "対応者を解除しました");
+      render();
+    } else {
+      toast("更新失敗: " + (result.message || "不明"), true);
+    }
+  } catch (err) {
+    toast("通信エラー", true);
+    console.error(err);
+  } finally {
+    hideLoading();
+  }
+}
+
+// プラントモーダル
+function openPlantModal(idx) {
+  currentEditIdx = idx;
+  const y = allYoyaku[idx];
+  document.getElementById("plant-modal-sub").textContent = `${y.receipt} / ${y.siteName}`;
+  
+  const listEl = document.getElementById("plant-list");
+  if (!plantList.length) {
+    listEl.innerHTML = '<div class="empty">プラント会社が登録されていません</div>';
+  } else {
+    let html = `<div class="modal-item ${!y.plant ? 'current' : ''}" onclick="selectPlant('')">未設定</div>`;
+    html += plantList.map(p =>
+      `<div class="modal-item ${p === y.plant ? 'current' : ''}" onclick="selectPlant('${p.replace(/'/g, "\\'")}')">${esc(p)}</div>`
+    ).join("");
+    listEl.innerHTML = html;
+  }
+  
+  document.getElementById("plant-modal").classList.add("on");
+}
+
+function closePlantModal() {
+  document.getElementById("plant-modal").classList.remove("on");
+  currentEditIdx = null;
+}
+
+async function selectPlant(newPlant) {
+  const idx = currentEditIdx;
+  if (idx === null) return;
+  
+  const y = allYoyaku[idx];
+  closePlantModal();
+  
+  if (y.plant === newPlant) return;
+  
+  showLoading("プラント会社を更新中...");
+  try {
+    const res = await fetch(GAS_URL, {
+      method: "POST",
+      headers: { "Content-Type": "text/plain" },
+      body: JSON.stringify({
+        action: "updatePlant",
+        row: y.row,
+        plant: newPlant,
+      }),
+    });
+    const result = await res.json();
+    if (result.status === "ok") {
+      allYoyaku[idx].plant = newPlant;
+      allYoyaku[idx].plantPhone = result.phone || "";
+      toast(newPlant ? `プラント会社を「${newPlant}」に設定` : "プラント会社を解除しました");
       render();
     } else {
       toast("更新失敗: " + (result.message || "不明"), true);
@@ -584,14 +698,18 @@ function closeConfirm(result) {
 
 function statusToClass(status) {
   const map = {
+    "":         "empty",
+    "対応中":    "taiouChu",
+    "顧客連絡済": "renraku",
+    "キャンセル": "cancel",
+    // 旧
     "予約済":   "yoyaku",
     "確認中":   "kakunin",
     "確定済":   "kakutei",
     "連絡済":   "renraku",
     "変更中":   "henkou",
-    "キャンセル": "cancel",
   };
-  return map[status] || "yoyaku";
+  return map[status] !== undefined ? map[status] : "empty";
 }
 
 function isPickup(y) {
