@@ -422,7 +422,7 @@ function buildCard(y, idx) {
         <div class="detail-grid">
           ${!pickup && y.vehicle ? `<div class="detail-label">車種</div><div class="detail-val">🚛 ${esc(y.vehicle)}</div>` : ''}
           <div class="detail-label">数量</div>
-          <div class="detail-val">💧 ${esc(y.quantity || '')} m³</div>
+          <div class="detail-val">${esc(y.quantity || '')} m³</div>
           <div class="detail-label">配合</div>
           <div class="detail-val">${esc(y.mix || '-')}</div>
           ${pickup ? `<div class="detail-label">形状</div><div class="detail-val">${esc(y.shape || '-')}</div>` : ''}
