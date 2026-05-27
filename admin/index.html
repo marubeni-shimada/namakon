@@ -229,7 +229,7 @@ body{font-family:-apple-system,'Hiragino Sans','Hiragino Kaku Gothic ProN',sans-
   <div class="filter-chip" data-filter="対応中">対応中</div>
   <div class="filter-chip" data-filter="顧客連絡済">顧客連絡済</div>
   <div class="filter-chip" data-filter="キャンセル">キャンセル</div>
-  <div class="filter-chip" data-filter="引取り">引取り</div>
+  <div class="filter-chip" data-filter="引き取り">引き取り</div>
 </div>
 
 <div class="summary">
@@ -341,7 +341,7 @@ function render() {
   const list = document.getElementById("list");
   let filtered = allYoyaku;
   
-  if (currentFilter === "引取り") {
+  if (currentFilter === "引き取り") {
     filtered = allYoyaku.filter(y => isPickup(y));
   } else if (currentFilter === "未対応") {
     // 未対応・予約済(旧)・確認中(旧)・変更中(旧) = 未対応扱い
@@ -391,7 +391,7 @@ function buildCard(y, idx) {
             ${esc(statusLabel)}
             <span class="badge-chev">▼</span>
           </span>
-          ${pickup ? '<span class="badge-hikitoiri">引取り</span>' : ''}
+          ${pickup ? '<span class="badge-hikitoiri">引き取り</span>' : ''}
         </div>
       </div>
       
@@ -404,11 +404,11 @@ function buildCard(y, idx) {
       </div>
       
       <div class="detail">
-        <div class="detail-section">${pickup ? '引取り情報' : '配送情報'}</div>
+        <div class="detail-section">${pickup ? '引き取り情報' : '配送情報'}</div>
         <div class="detail-grid">
-          <div class="detail-label">${pickup ? '引取希望日' : '配送希望日'}</div>
+          <div class="detail-label">${pickup ? '引き取り希望日' : '配送希望日'}</div>
           <div class="detail-val">📅 ${esc(dateStr)}</div>
-          <div class="detail-label">${pickup ? '引取時間' : '納入時間'}</div>
+          <div class="detail-label">${pickup ? '引き取り時間' : '納入時間'}</div>
           <div class="detail-val">🕐 ${esc(timeStr)}${specTimeStr ? ' ' + esc(specTimeStr) : ''}</div>
         </div>
         
@@ -785,7 +785,7 @@ function statusToClass(status) {
 }
 
 function isPickup(y) {
-  if (y.pickupType === "引取り") return true;
+  if (y.pickupType === "引き取り" || y.pickupType === "引取り") return true;
   if (!y.pickupType && !y.vehicle && !y.method && !y.test) return true;
   return false;
 }
