@@ -26,43 +26,112 @@ body{font-family:-apple-system,'Hiragino Sans','Hiragino Kaku Gothic ProN',sans-
 .stat-val.red{color:#E24B4A}
 .list{padding:10px 12px}
 .empty{text-align:center;padding:60px 0;color:#999;font-size:14px;line-height:1.8}
-.card{background:#fff;border:1.5px solid #E5E7EA;border-radius:12px;padding:12px;margin-bottom:8px}
+.card{background:#fff;border:1.5px solid #E5E7EA;border-radius:12px;padding:12px;margin-bottom:8px;position:relative}
 .card.open{border-color:#06C755}
 .card.done{background:#F7F8FA;opacity:0.85}
+.card.highlight{border-color:#FF9800;box-shadow:0 0 0 3px rgba(255,152,0,0.2)}
 .card-top{display:flex;align-items:flex-start;justify-content:space-between;margin-bottom:8px}
 .receipt{font-size:11px;color:#888;margin-bottom:2px}
 .site-name{font-size:14px;font-weight:700;color:#1A1A1A;margin-bottom:2px}
 .company{font-size:11px;color:#666}
-.badge{font-size:10px;padding:3px 8px;border-radius:10px;font-weight:600;white-space:nowrap}
-.badge-yoyaku{background:#EAF3DE;color:#3B6D11}
-.badge-kakunin{background:#FAEEDA;color:#854F0B}
-.badge-kakutei{background:#E6F1FB;color:#185FA5}
-.badge-renraku{background:#E1F5EE;color:#0F6E56}
-.badge-henkou{background:#FEDCBD;color:#854F0B}
-.badge-cancel{background:#FADBDA;color:#9B1F1F}
-.badge-hikitoiri{background:#EEEDFE;color:#534AB7;margin-left:4px}
+
+/* ステータスバッジ(タップ可) */
+.badge-status{font-size:10px;padding:4px 9px;border-radius:11px;font-weight:600;white-space:nowrap;cursor:pointer;display:inline-flex;align-items:center;gap:3px;border:0.5px solid transparent;-webkit-tap-highlight-color:transparent}
+.badge-status:active{opacity:.8}
+.badge-status.yoyaku{background:#EAF3DE;color:#3B6D11;border-color:#C0DD97}
+.badge-status.kakunin{background:#FAEEDA;color:#854F0B;border-color:#E8C97A}
+.badge-status.kakutei{background:#E6F1FB;color:#185FA5;border-color:#B5D4F4}
+.badge-status.renraku{background:#E1F5EE;color:#0F6E56;border-color:#A0D8C5}
+.badge-status.henkou{background:#FEDCBD;color:#854F0B;border-color:#F0B97D}
+.badge-status.cancel{background:#FADBDA;color:#9B1F1F;border-color:#E89A98}
+.badge-hikitoiri{font-size:10px;padding:3px 8px;border-radius:10px;font-weight:600;background:#EEEDFE;color:#534AB7;margin-left:4px;border:0.5px solid #C0BAE0}
+.badge-chev{font-size:9px;opacity:0.7}
+
+/* ステータス変更ポップアップ */
+.status-popup{position:absolute;top:38px;right:12px;background:#fff;border:1px solid #DDD;border-radius:8px;padding:4px;box-shadow:0 4px 12px rgba(0,0,0,0.15);z-index:20;min-width:120px;display:none}
+.status-popup.on{display:block}
+.status-item{padding:8px 12px;font-size:12px;border-radius:5px;cursor:pointer;color:#333;-webkit-tap-highlight-color:transparent}
+.status-item:hover,.status-item:active{background:#F2F3F5}
+.status-item.current{font-weight:600;color:#06C755;background:#F0FBF5}
+
 .info-row{display:flex;gap:12px;margin-top:6px;flex-wrap:wrap;align-items:center}
 .info-item{font-size:11px;color:#666;display:flex;align-items:center;gap:3px}
-.taiou-mini{display:inline-flex;align-items:center;gap:3px;padding:2px 8px;border-radius:12px;font-size:11px;font-weight:500}
+
+/* 対応者プルダウン(コンパクト) */
+.taiou-mini{display:inline-flex;align-items:center;gap:3px;padding:2px 8px;border-radius:12px;font-size:11px;font-weight:500;cursor:pointer;-webkit-tap-highlight-color:transparent;position:relative}
 .taiou-mini.set{background:#E6F1FB;color:#1976D2;border:0.5px solid #1976D2}
 .taiou-mini.empty{background:#F7F8FA;color:#AAA;border:0.5px solid #E0E0E0}
+.taiou-mini:active{opacity:.8}
+
+/* 対応者ポップアップ */
+.taiou-popup{position:absolute;top:24px;right:0;background:#fff;border:1px solid #DDD;border-radius:8px;padding:4px;box-shadow:0 4px 12px rgba(0,0,0,0.15);z-index:20;min-width:110px;display:none}
+.taiou-popup.on{display:block}
+.taiou-item{padding:7px 12px;font-size:12px;border-radius:5px;cursor:pointer;color:#333;-webkit-tap-highlight-color:transparent}
+.taiou-item:hover,.taiou-item:active{background:#F2F3F5}
+.taiou-item.current{font-weight:600;color:#1976D2;background:#E6F1FB}
+
 .detail{margin-top:10px;padding-top:10px;border-top:1px solid #EEE;display:none}
 .card.open .detail{display:block}
-.detail-section{font-size:10px;color:#06C755;text-transform:uppercase;letter-spacing:.06em;margin:8px 0 6px;font-weight:700}
+.detail-section{font-size:10px;color:#06C755;text-transform:uppercase;letter-spacing:.06em;margin:10px 0 6px;font-weight:700}
 .detail-section:first-child{margin-top:0}
 .detail-grid{display:grid;grid-template-columns:90px 1fr;gap:5px 12px;font-size:12px}
 .detail-label{color:#888}
 .detail-val{color:#1A1A1A;font-weight:500}
 .remarks{margin-top:4px;padding:8px 10px;background:#F7F8FA;border-radius:6px;font-size:12px;line-height:1.6;white-space:pre-wrap}
+
+/* メモ欄 */
+.memo-wrap{margin-top:4px}
+.memo-input{width:100%;min-height:60px;padding:8px 10px;background:#FFFBE6;border:1.5px solid #F5D67A;border-radius:6px;font-size:12px;line-height:1.6;font-family:inherit;resize:vertical;color:#1A1A1A;outline:none}
+.memo-input:focus{border-color:#F5C842;background:#FFF8D6}
+.memo-input::placeholder{color:#B59F50}
+.memo-bottom{display:flex;align-items:center;justify-content:space-between;margin-top:6px;gap:8px}
+.memo-status{font-size:10px;color:#999;display:flex;align-items:center;gap:3px}
+.memo-status.saved{color:#3B6D11}
+.btn-save{padding:6px 14px;background:#06C755;color:#fff;border:none;border-radius:6px;font-size:11px;font-weight:500;cursor:pointer;display:flex;align-items:center;gap:3px;font-family:inherit;-webkit-tap-highlight-color:transparent}
+.btn-save:active{opacity:.85}
+.btn-save:disabled{background:#B0DFC0;cursor:not-allowed}
+
 .toggle-btn{width:100%;padding:7px;margin-top:10px;background:#F7F8FA;border:1px solid #E5E7EA;border-radius:7px;font-size:12px;color:#555;cursor:pointer;font-family:inherit;display:flex;align-items:center;justify-content:center;gap:4px;-webkit-tap-highlight-color:transparent}
 .toggle-btn:active{background:#EAEBEE}
-.banner{background:#FFF9E6;border-bottom:1px solid #F5C842;padding:8px 16px;font-size:12px;color:#854F0B;text-align:center;font-weight:500}
+
+.banner{background:#E6F1FB;border-bottom:1px solid #B5D4F4;padding:8px 16px;font-size:12px;color:#185FA5;text-align:center;font-weight:500}
+
 .loading{text-align:center;padding:60px 0;color:#999}
 .spinner{display:inline-block;width:32px;height:32px;border:3px solid #E5E7EA;border-top-color:#06C755;border-radius:50%;animation:spin .7s linear infinite;margin-bottom:10px}
 @keyframes spin{to{transform:rotate(360deg)}}
+
+/* トースト */
+.toast{position:fixed;bottom:20px;left:50%;transform:translateX(-50%);background:#1A1A1A;color:#fff;padding:10px 22px;border-radius:24px;font-size:14px;font-weight:500;opacity:0;pointer-events:none;transition:opacity .2s;white-space:nowrap;z-index:1000}
+.toast.on{opacity:1}
+.toast.error{background:#C0392B}
+
+/* 確認モーダル */
+.modal-overlay{display:none;position:fixed;inset:0;background:rgba(0,0,0,0.5);z-index:1100;align-items:center;justify-content:center;padding:20px}
+.modal-overlay.on{display:flex}
+.modal{background:#fff;border-radius:16px;padding:24px 20px;max-width:340px;width:100%;box-shadow:0 10px 40px rgba(0,0,0,0.2)}
+.modal-title{font-size:17px;font-weight:700;color:#1A1A1A;margin-bottom:10px}
+.modal-message{font-size:14px;color:#555;line-height:1.7;margin-bottom:20px}
+.modal-buttons{display:flex;gap:10px}
+.modal-btn{flex:1;padding:12px;border:none;border-radius:10px;font-size:15px;font-weight:600;cursor:pointer;font-family:inherit;-webkit-tap-highlight-color:transparent}
+.modal-btn:active{opacity:.85}
+.modal-btn-cancel{background:#F2F3F5;color:#555}
+.modal-btn-ok{background:#06C755;color:#fff}
 </style>
 </head>
 <body>
+
+<div class="toast" id="toast"></div>
+
+<div class="modal-overlay" id="confirm-modal">
+  <div class="modal">
+    <div class="modal-title" id="confirm-title">確認</div>
+    <div class="modal-message" id="confirm-message"></div>
+    <div class="modal-buttons">
+      <button class="modal-btn modal-btn-cancel" onclick="closeConfirm(false)">キャンセル</button>
+      <button class="modal-btn modal-btn-ok" id="confirm-ok-btn" onclick="closeConfirm(true)">OK</button>
+    </div>
+  </div>
+</div>
 
 <div class="header">
   <div class="header-left">
@@ -76,7 +145,7 @@ body{font-family:-apple-system,'Hiragino Sans','Hiragino Kaku Gothic ProN',sans-
 </div>
 
 <div class="banner">
-  📖 閲覧専用モード(編集機能は今後追加予定)
+  ✏️ ステータス・対応者・メモを編集できます
 </div>
 
 <div class="filter-bar" id="filter-bar">
@@ -110,13 +179,30 @@ body{font-family:-apple-system,'Hiragino Sans','Hiragino Kaku Gothic ProN',sans-
 
 <script>
 const GAS_URL = "https://script.google.com/macros/s/AKfycbyMc1GHyNYu-YxEGiK5y9D3qCHlB8_f50o1XBdmc8rqa24G3_n_GN4hpK4lQ2BGKXMI/exec";
+const TAIOU_LIST = ["松浦", "村上", "小長谷"];
+const STATUS_LIST = ["予約済", "確認中", "確定済", "連絡済", "変更中", "キャンセル"];
 
 let allYoyaku = [];
 let currentFilter = "all";
+let highlightReceipt = null;
 
 document.addEventListener("DOMContentLoaded", () => {
+  // URLパラメータ?r=受付番号 でハイライト
+  const params = new URLSearchParams(location.search);
+  highlightReceipt = params.get("r");
+  
   setupFilter();
   loadList();
+  
+  // ポップアップ外クリックで閉じる
+  document.addEventListener("click", (e) => {
+    if (!e.target.closest(".badge-status") && !e.target.closest(".status-popup")) {
+      document.querySelectorAll(".status-popup").forEach(p => p.classList.remove("on"));
+    }
+    if (!e.target.closest(".taiou-mini") && !e.target.closest(".taiou-popup")) {
+      document.querySelectorAll(".taiou-popup").forEach(p => p.classList.remove("on"));
+    }
+  });
 });
 
 function setupFilter() {
@@ -139,6 +225,21 @@ async function loadList() {
     const data = await res.json();
     allYoyaku = (data.yoyaku || []).reverse();
     render();
+    
+    // 受付番号指定があればスクロール
+    if (highlightReceipt) {
+      setTimeout(() => {
+        const idx = allYoyaku.findIndex(y => y.receipt === highlightReceipt);
+        if (idx >= 0) {
+          const card = document.getElementById(`card-${idx}`);
+          if (card) {
+            card.classList.add("highlight");
+            card.classList.add("open");
+            card.scrollIntoView({ behavior: "smooth", block: "center" });
+          }
+        }
+      }, 100);
+    }
   } catch (err) {
     list.innerHTML = '<div class="empty">読み込みに失敗しました<br>更新ボタンを押してください</div>';
     console.error(err);
@@ -166,14 +267,31 @@ function render() {
     return;
   }
   
-  list.innerHTML = filtered.map((y, i) => buildCard(y, i)).join("");
+  list.innerHTML = filtered.map((y, i) => {
+    // allYoyaku内のインデックスを取得
+    const origIdx = allYoyaku.indexOf(y);
+    return buildCard(y, origIdx);
+  }).join("");
 }
 
 function buildCard(y, idx) {
-  const statusClass = `badge-${statusToClass(y.status)}`;
+  const statusClass = `${statusToClass(y.status)}`;
   const isDone = y.status === "連絡済" || y.status === "キャンセル";
   const pickup = isPickup(y);
   const dateStr = formatDate(y.deliveryDate);
+  
+  // ステータスのプルダウンHTML
+  const statusOptions = STATUS_LIST.map(s => 
+    `<div class="status-item ${s === y.status ? 'current' : ''}" onclick="changeStatus(${idx}, '${s}', event)">${s}</div>`
+  ).join("");
+  
+  // 対応者プルダウンHTML
+  const taiouOptions = `
+    <div class="taiou-item ${!y.taiousha ? 'current' : ''}" onclick="changeTaiousha(${idx}, '', event)">未設定</div>
+    ${TAIOU_LIST.map(t =>
+      `<div class="taiou-item ${t === y.taiousha ? 'current' : ''}" onclick="changeTaiousha(${idx}, '${t}', event)">${t}</div>`
+    ).join("")}
+  `;
   
   return `
     <div class="card ${isDone ? 'done' : ''}" id="card-${idx}">
@@ -183,9 +301,15 @@ function buildCard(y, idx) {
           <div class="site-name">${esc(y.siteName)}</div>
           <div class="company">${esc(y.company)}</div>
         </div>
-        <div>
-          <span class="badge ${statusClass}">${esc(y.status || '未設定')}</span>
-          ${pickup ? '<span class="badge badge-hikitoiri">引取り</span>' : ''}
+        <div style="position:relative">
+          <span class="badge-status ${statusClass}" onclick="toggleStatusPopup(${idx}, event)">
+            ${esc(y.status || '未設定')}
+            <span class="badge-chev">▼</span>
+          </span>
+          ${pickup ? '<span class="badge-hikitoiri">引取り</span>' : ''}
+          <div class="status-popup" id="status-popup-${idx}">
+            ${statusOptions}
+          </div>
         </div>
       </div>
       
@@ -196,7 +320,13 @@ function buildCard(y, idx) {
         ${pickup && y.shape ? `<div class="info-item">🧱 ${esc(y.shape)}</div>` : ''}
         <div class="info-item">💧 ${esc(y.quantity || '')} m³</div>
         <div class="info-item">👤 ${esc(y.staff || '')}</div>
-        <span class="taiou-mini ${y.taiousha ? 'set' : 'empty'}">🎧 ${esc(y.taiousha || '未設定')}</span>
+        <span class="taiou-mini ${y.taiousha ? 'set' : 'empty'}" onclick="toggleTaiouPopup(${idx}, event)">
+          🎧 ${esc(y.taiousha || '未設定')}
+          <span class="badge-chev">▼</span>
+          <div class="taiou-popup" id="taiou-popup-${idx}">
+            ${taiouOptions}
+          </div>
+        </span>
       </div>
       
       <div class="detail">
@@ -230,9 +360,18 @@ function buildCard(y, idx) {
         </div>
         
         ${y.remarks ? `
-          <div class="detail-section">備考</div>
+          <div class="detail-section">備考(取引先記入)</div>
           <div class="remarks">${esc(y.remarks)}</div>
         ` : ''}
+        
+        <div class="detail-section">📝 社内メモ</div>
+        <div class="memo-wrap">
+          <textarea class="memo-input" id="memo-${idx}" placeholder="社内向けのメモを入力(取引先には表示されません)">${esc(y.memo || '')}</textarea>
+          <div class="memo-bottom">
+            <div class="memo-status" id="memo-status-${idx}"></div>
+            <button class="btn-save" onclick="saveMemo(${idx})">💾 保存</button>
+          </div>
+        </div>
       </div>
       
       <button class="toggle-btn" onclick="toggleDetail(${idx})">
@@ -257,6 +396,152 @@ function toggleDetail(idx) {
   }
 }
 
+function toggleStatusPopup(idx, e) {
+  e.stopPropagation();
+  document.querySelectorAll(".status-popup").forEach(p => {
+    if (p.id !== `status-popup-${idx}`) p.classList.remove("on");
+  });
+  document.querySelectorAll(".taiou-popup").forEach(p => p.classList.remove("on"));
+  const popup = document.getElementById(`status-popup-${idx}`);
+  popup.classList.toggle("on");
+}
+
+function toggleTaiouPopup(idx, e) {
+  e.stopPropagation();
+  document.querySelectorAll(".taiou-popup").forEach(p => {
+    if (p.id !== `taiou-popup-${idx}`) p.classList.remove("on");
+  });
+  document.querySelectorAll(".status-popup").forEach(p => p.classList.remove("on"));
+  const popup = document.getElementById(`taiou-popup-${idx}`);
+  popup.classList.toggle("on");
+}
+
+async function changeStatus(idx, newStatus, e) {
+  e.stopPropagation();
+  const y = allYoyaku[idx];
+  if (y.status === newStatus) {
+    document.getElementById(`status-popup-${idx}`).classList.remove("on");
+    return;
+  }
+  
+  let confirmMsg = `ステータスを「${newStatus}」に変更しますか?`;
+  if (newStatus === "確定済") {
+    confirmMsg = `ステータスを「確定済」に変更しますか?\n\n担当者(${y.staff})にLINE通知が送信されます。`;
+  }
+  
+  const ok = await customConfirm(confirmMsg);
+  document.getElementById(`status-popup-${idx}`).classList.remove("on");
+  if (!ok) return;
+  
+  try {
+    const res = await fetch(GAS_URL, {
+      method: "POST",
+      headers: { "Content-Type": "text/plain" },
+      body: JSON.stringify({
+        action: "updateStatus",
+        row: y.row,
+        status: newStatus,
+      }),
+    });
+    const result = await res.json();
+    if (result.status === "ok") {
+      allYoyaku[idx].status = newStatus;
+      toast(newStatus === "確定済" ? "確定済に変更し、担当者へ通知しました" : `「${newStatus}」に変更しました`);
+      render();
+    } else {
+      toast("更新失敗: " + (result.message || "不明"), true);
+    }
+  } catch (err) {
+    toast("通信エラー", true);
+    console.error(err);
+  }
+}
+
+async function changeTaiousha(idx, newTaiou, e) {
+  e.stopPropagation();
+  const y = allYoyaku[idx];
+  if (y.taiousha === newTaiou) {
+    document.getElementById(`taiou-popup-${idx}`).classList.remove("on");
+    return;
+  }
+  document.getElementById(`taiou-popup-${idx}`).classList.remove("on");
+  
+  try {
+    const res = await fetch(GAS_URL, {
+      method: "POST",
+      headers: { "Content-Type": "text/plain" },
+      body: JSON.stringify({
+        action: "updateTaiousha",
+        row: y.row,
+        taiousha: newTaiou,
+      }),
+    });
+    const result = await res.json();
+    if (result.status === "ok") {
+      allYoyaku[idx].taiousha = newTaiou;
+      toast(newTaiou ? `対応者を「${newTaiou}」に設定` : "対応者を解除しました");
+      render();
+    } else {
+      toast("更新失敗: " + (result.message || "不明"), true);
+    }
+  } catch (err) {
+    toast("通信エラー", true);
+    console.error(err);
+  }
+}
+
+async function saveMemo(idx) {
+  const y = allYoyaku[idx];
+  const memo = document.getElementById(`memo-${idx}`).value;
+  const statusEl = document.getElementById(`memo-status-${idx}`);
+  
+  statusEl.textContent = "💭 保存中...";
+  statusEl.className = "memo-status";
+  
+  try {
+    const res = await fetch(GAS_URL, {
+      method: "POST",
+      headers: { "Content-Type": "text/plain" },
+      body: JSON.stringify({
+        action: "updateMemo",
+        row: y.row,
+        memo: memo,
+      }),
+    });
+    const result = await res.json();
+    if (result.status === "ok") {
+      allYoyaku[idx].memo = memo;
+      const now = new Date();
+      const timeStr = `${now.getMonth()+1}/${now.getDate()} ${String(now.getHours()).padStart(2,'0')}:${String(now.getMinutes()).padStart(2,'0')}`;
+      statusEl.textContent = `✓ ${timeStr} に保存`;
+      statusEl.className = "memo-status saved";
+    } else {
+      statusEl.textContent = "❌ 保存失敗";
+      toast("保存失敗: " + (result.message || "不明"), true);
+    }
+  } catch (err) {
+    statusEl.textContent = "❌ 保存失敗";
+    toast("通信エラー", true);
+    console.error(err);
+  }
+}
+
+let _confirmResolve = null;
+function customConfirm(message) {
+  return new Promise(resolve => {
+    _confirmResolve = resolve;
+    document.getElementById("confirm-message").textContent = message;
+    document.getElementById("confirm-modal").classList.add("on");
+  });
+}
+function closeConfirm(result) {
+  document.getElementById("confirm-modal").classList.remove("on");
+  if (_confirmResolve) {
+    _confirmResolve(result);
+    _confirmResolve = null;
+  }
+}
+
 function statusToClass(status) {
   const map = {
     "予約済":   "yoyaku",
@@ -269,11 +554,8 @@ function statusToClass(status) {
   return map[status] || "yoyaku";
 }
 
-// Y列「受取方法」が「引取り」なら引取り
-// 既存データはY列が空なので、念のため車種・打設方法も見る
 function isPickup(y) {
   if (y.pickupType === "引取り") return true;
-  // 旧データ互換:車種・打設方法・現場試験が全部空なら引取りと判定
   if (!y.pickupType && !y.vehicle && !y.method && !y.test) return true;
   return false;
 }
@@ -290,7 +572,14 @@ function formatDate(d) {
 }
 
 function esc(s) {
-  return String(s || "").replace(/&/g,"&amp;").replace(/</g,"&lt;").replace(/>/g,"&gt;");
+  return String(s || "").replace(/&/g,"&amp;").replace(/</g,"&lt;").replace(/>/g,"&gt;").replace(/"/g,"&quot;");
+}
+
+function toast(msg, isError = false) {
+  const el = document.getElementById("toast");
+  el.textContent = msg;
+  el.className = "toast on" + (isError ? " error" : "");
+  setTimeout(() => el.className = "toast" + (isError ? " error" : ""), 2500);
 }
 </script>
 
