@@ -435,6 +435,10 @@ function buildCard(y, idx) {
           <div class="detail-val">📅 ${esc(dateStr)}</div>
           <div class="detail-label">${pickup ? '引き取り時間' : '納入時間'}</div>
           <div class="detail-val">🕐 ${esc(timeStr)}${specTimeStr ? ' ' + esc(specTimeStr) : ''}</div>
+          ${(y.deliveryDate2 || y.deliveryTime2) ? `
+          <div class="detail-label" style="color:#06C755;font-weight:600;">第2希望</div>
+          <div class="detail-val" style="color:#06C755;font-weight:600;">${esc(formatDate(y.deliveryDate2))} ${esc(formatTime(y.deliveryTime2))}</div>
+          ` : ''}
         </div>
         
         <div class="detail-section">現場情報</div>
