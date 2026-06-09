@@ -302,7 +302,7 @@ body.is-pickup .show-on-pickup{display:block}
       <div class="field">
         <div class="label">数量 <span class="req">必須</span></div>
         <div style="display:flex;align-items:center;gap:8px;">
-          <input type="number" id="y-qty" class="qty-input" placeholder="例 2.5" min="0.5" step="0.5" inputmode="decimal">
+          <input type="number" id="y-qty" class="qty-input" placeholder="例 2.5" min="0.5" step="0.5" inputmode="decimal" oninput="checkQtyWarning()">
           <span style="font-size:14px;color:#888;">m³</span>
         </div>
       </div>
@@ -347,6 +347,17 @@ body.is-pickup .show-on-pickup{display:block}
     <div class="chips" id="chips-shape">
       <div class="chip" data-val="カラ練り">カラ練り</div>
       <div class="chip" data-val="水練り">水練り</div>
+    </div>
+  </div>
+
+  <div class="card" id="qty-warning-card" style="display:none;background:#FCEBEB;border:1.5px solid #F09595;">
+    <div style="display:flex;align-items:flex-start;gap:10px;">
+      <span style="font-size:22px;line-height:1;">⚠️</span>
+      <div style="font-size:12px;color:#791F1F;line-height:1.7;font-weight:600;">
+        ご入力の数量は<strong style="font-size:13px;">51㎥以上</strong>です。<br>
+        本システムでは50㎥以下の予約を対象としております。<br>
+        51㎥以上の場合は各営業担当へご連絡をお願いします。
+      </div>
     </div>
   </div>
 
@@ -575,6 +586,17 @@ function onMixInput(input, nextId) {
   input.value = input.value.replace(/[^0-9]/g, "");
   if (input.value.length >= 2 && nextId) {
     document.getElementById(nextId).focus();
+  }
+}
+
+// ★ 数量51㎥以上の警告表示
+function checkQtyWarning() {
+  const qty = parseFloat(document.getElementById("y-qty").value) || 0;
+  const warning = document.getElementById("qty-warning-card");
+  if (qty >= 51) {
+    warning.style.display = "block";
+  } else {
+    warning.style.display = "none";
   }
 }
 
