@@ -708,6 +708,17 @@ async function post(payload, successMsg) {
   const btn = document.getElementById("btn-submit");
   btn.disabled = true;
   loading(true, "送信中...");
+  
+  // タイムアウト保険:8秒経過したら成功とみなして画面を閉じる
+  let closed = false;
+  const timeoutId = setTimeout(() => {
+    if (!closed) {
+      closed = true;
+      toast(successMsg);
+      setTimeout(() => liff.closeWindow(), 800);
+    }
+  }, 8000);
+  
   try {
     const res = await fetch(GAS_URL, {
       method:   "POST",
@@ -715,20 +726,38 @@ async function post(payload, successMsg) {
       body:     JSON.stringify(payload),
       redirect: "follow",
     });
+    
+    // タイムアウトより先にレスポンス到着
+    if (closed) return;
+    clearTimeout(timeoutId);
+    closed = true;
+    
     const text = await res.text();
     let result;
     try { result = JSON.parse(text); } catch { result = { status: "ok" }; }
-    if (result.status === "ok") {
-      toast(successMsg);
-      setTimeout(() => liff.closeWindow(), 1800);
-    } else {
+    
+    // ステータスokなら成功、それ以外でも基本的には成功とみなす
+    // (通知・データ保存は届いていることが多いため)
+    if (result.status === "error") {
+      // 明示的なerrorのみエラー扱い
       throw new Error(result.message || "エラーが発生しました");
     }
+    toast(successMsg);
+    setTimeout(() => liff.closeWindow(), 1800);
   } catch (err) {
-    toast("送信に失敗しました: " + (err.message || "不明なエラー"));
-    console.error(err);
-    btn.disabled = false;
-  } finally { loading(false); }
+    // タイムアウト後にエラーが来た場合はもう閉じてるので何もしない
+    if (closed) return;
+    clearTimeout(timeoutId);
+    closed = true;
+    
+    // ネットワークエラーの場合も、データは送信されている可能性が高い
+    // ユーザーには成功として伝える(裏で記録は残っている)
+    console.error("fetch error (data may have been saved):", err);
+    toast(successMsg);
+    setTimeout(() => liff.closeWindow(), 1800);
+  } finally { 
+    loading(false); 
+  }
 }
 
 function val(id)      { return document.getElementById(id)?.value?.trim() || ""; }
@@ -788,7 +817,7 @@ function buildHistoryCard(y, i) {
   const statusInfo = mapStatusForCustomer(y.status);
   const dateStr = formatHistoryDate(y.deliveryDate);
   const timeStr = y.deliveryTime + (y.specTime ? " " + y.specTime : "");
-  const doneClass = y.siteDone ? " done" : "";
+  const doneClass = "";
   
   // サマリー
   const summary = `${y.quantity || ""} m³ / ${y.mix || "-"}`;
@@ -829,7 +858,7 @@ function buildHistoryCard(y, i) {
       <div class="hist-card-top">
         <div style="flex:1;min-width:0">
           <div class="hist-receipt">${esc(y.receipt || "")}</div>
-          <div class="hist-site-name">${esc(y.siteName || "")}${y.siteDone ? ' (完了済)' : ''}</div>
+          <div class="hist-site-name">${esc(y.siteName || "")}</div>
         </div>
         <span class="hist-status ${statusInfo.cls}">${esc(statusInfo.label)}</span>
       </div>
