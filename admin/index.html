@@ -88,8 +88,8 @@ body{font-family:-apple-system,'Hiragino Sans','Hiragino Kaku Gothic ProN',sans-
 .card.open .detail{display:block}
 .detail-section{font-size:10px;color:#06C755;text-transform:uppercase;letter-spacing:.06em;margin:10px 0 6px;font-weight:700}
 .detail-section:first-child{margin-top:0}
-.detail-grid{display:grid;grid-template-columns:90px 1fr;gap:5px 12px;font-size:12px;align-items:center}
-.detail-label{color:#888}
+.detail-grid{display:grid;grid-template-columns:110px 1fr;gap:5px 12px;font-size:12px;align-items:center}
+.detail-label{color:#888;white-space:nowrap}
 .detail-val{color:#1A1A1A;font-weight:500}
 .remarks{margin-top:4px;padding:8px 10px;background:#F7F8FA;border-radius:6px;font-size:12px;line-height:1.6;white-space:pre-wrap}
 
@@ -432,11 +432,12 @@ function buildCard(y, idx) {
         <div class="detail-section">${pickup ? '引き取り情報' : '配送情報'}</div>
         <div class="detail-grid">
           ${(() => {
-            const has2 = y.deliveryDate2 || y.deliveryTime2;
+            const time2Disp = formatTime(y.deliveryTime2);
+            const has2 = y.deliveryDate2 || time2Disp;
             const dateTimeFull = formatDateFull(y.deliveryDate) + ' ' + (timeStr || '') + (specTimeStr ? ' ' + specTimeStr : '');
             const label1 = (pickup ? '引き取り希望日' : '配送希望日') + (has2 ? '(第1)' : '');
             const label2 = '第2希望';
-            const date2Full = formatDateFull(y.deliveryDate2) + (y.deliveryTime2 ? ' ' + y.deliveryTime2 : '');
+            const date2Full = formatDateFull(y.deliveryDate2) + (time2Disp ? ' ' + time2Disp : '');
             return `
               <div class="detail-label" style="color:#06C755;font-weight:600;">${label1}</div>
               <div class="detail-val" style="color:#06C755;font-weight:600;">📅 ${esc(dateTimeFull)}</div>
