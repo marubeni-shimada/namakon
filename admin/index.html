@@ -435,14 +435,13 @@ function buildCard(y, idx) {
             const time2Disp = formatTime(y.deliveryTime2);
             const has2 = y.deliveryDate2 || time2Disp;
             const dateTimeFull = formatDateFull(y.deliveryDate) + ' ' + (timeStr || '') + (specTimeStr ? ' ' + specTimeStr : '');
-            const label1 = (pickup ? '引き取り希望日' : '配送希望日') + (has2 ? '(第1)' : '');
-            const label2 = '第2希望';
+            const label1 = has2 ? '第1希望' : (pickup ? '引き取り希望日' : '配送希望日');
             const date2Full = formatDateFull(y.deliveryDate2) + (time2Disp ? ' ' + time2Disp : '');
             return `
               <div class="detail-label" style="color:#06C755;font-weight:600;">${label1}</div>
               <div class="detail-val" style="color:#06C755;font-weight:600;">📅 ${esc(dateTimeFull)}</div>
               ${has2 ? `
-                <div class="detail-label">${label2}</div>
+                <div class="detail-label">第2希望</div>
                 <div class="detail-val">📅 ${esc(date2Full)}</div>
               ` : ''}
             `;
