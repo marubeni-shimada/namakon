@@ -235,6 +235,8 @@ body.is-pickup .show-on-pickup{display:block}
       <button type="button" class="toggle-btn on" id="toggle-delivery" onclick="setPickupType('配送')">配送</button>
       <button type="button" class="toggle-btn" id="toggle-pickup" onclick="setPickupType('引き取り')">引き取り</button>
     </div>
+    
+    <div style="font-size:11px;font-weight:700;color:#06C755;letter-spacing:0.05em;margin-bottom:8px;">第1希望</div>
     <div class="row2">
       <div class="field">
         <div class="label">
@@ -242,7 +244,7 @@ body.is-pickup .show-on-pickup{display:block}
           <span class="show-on-pickup">引き取り希望日</span>
           <span class="req">必須</span>
         </div>
-        <input type="date" id="y-date">
+        <input type="date" id="y-date" onchange="onDate1Change()">
       </div>
       <div class="field">
         <div class="label">
@@ -250,7 +252,7 @@ body.is-pickup .show-on-pickup{display:block}
           <span class="show-on-pickup">引き取り時間</span>
           <span class="req">必須</span>
         </div>
-        <select id="y-time" onchange="toggleSpecTime()">
+        <select id="y-time" onchange="toggleSpecTime(); checkUrgentWarning()">
           <option value="8:30">8:30</option>
           <option value="10:00">10:00</option>
           <option value="13:00">13:00</option>
@@ -261,8 +263,58 @@ body.is-pickup .show-on-pickup{display:block}
     </div>
     <div class="field extra" id="spec-time-wrap">
       <div class="label">指定時間</div>
-      <input type="time" id="y-spec-time">
+      <input type="time" id="y-spec-time" onchange="checkUrgentWarning()">
     </div>
+    
+    <button type="button" id="add-second-choice-btn" onclick="addSecondChoice()" 
+      style="margin-top:4px;margin-bottom:14px;width:100%;padding:9px;background:#F0FBF5;border:1.5px dashed #06C755;color:#06C755;border-radius:10px;font-size:12px;font-weight:600;cursor:pointer;font-family:inherit;-webkit-tap-highlight-color:transparent;">
+      + 第2希望を追加
+    </button>
+    
+    <div id="second-choice-wrap" style="display:none;margin-bottom:14px;padding:12px;background:#F7F8FA;border:1.5px solid #E5E7EA;border-radius:10px;">
+      <div style="display:flex;justify-content:space-between;align-items:center;margin-bottom:10px;">
+        <div style="font-size:11px;font-weight:700;color:#06C755;letter-spacing:0.05em;">第2希望(任意)</div>
+        <button type="button" onclick="removeSecondChoice()" style="background:none;border:none;color:#888;font-size:18px;cursor:pointer;padding:0 4px;line-height:1;-webkit-tap-highlight-color:transparent;">✕</button>
+      </div>
+      <div class="row2">
+        <div class="field">
+          <div class="label">
+            <span class="hide-on-pickup">配送希望日</span>
+            <span class="show-on-pickup">引き取り希望日</span>
+          </div>
+          <input type="date" id="y-date2" style="background:#fff;">
+        </div>
+        <div class="field">
+          <div class="label">
+            <span class="hide-on-pickup">納入時間</span>
+            <span class="show-on-pickup">引き取り時間</span>
+          </div>
+          <select id="y-time2" onchange="toggleSpecTime2()" style="background:#fff;">
+            <option value="">選択してください</option>
+            <option value="8:30">8:30</option>
+            <option value="10:00">10:00</option>
+            <option value="13:00">13:00</option>
+            <option value="15:00">15:00</option>
+            <option value="指定">指定(入力)</option>
+          </select>
+        </div>
+      </div>
+      <div class="field extra" id="spec-time-wrap2" style="margin-top:8px;">
+        <div class="label">指定時間</div>
+        <input type="time" id="y-spec-time2" style="background:#fff;">
+      </div>
+    </div>
+    
+    <div id="urgent-warning" style="display:none;background:#FCEBEB;border:1.5px solid #F09595;border-radius:10px;padding:12px;margin-bottom:14px;">
+      <div style="display:flex;align-items:flex-start;gap:8px;">
+        <span style="font-size:18px;line-height:1.2;">⚠️</span>
+        <div style="font-size:12px;color:#791F1F;line-height:1.7;font-weight:600;">
+          直近のご予約のため、プラント確保ができない可能性があります。<br>
+          担当営業までご連絡ください。
+        </div>
+      </div>
+    </div>
+    
     <div class="field hide-on-pickup">
       <div class="label">車種 <span class="req">必須</span></div>
       <div class="chips" id="chips-vehicle">
@@ -582,6 +634,52 @@ function toggleSpecTime() {
   document.getElementById("spec-time-wrap").classList.toggle("on", show);
 }
 
+// ★ 第2希望:時間が「指定」のとき指定時間欄を表示
+function toggleSpecTime2() {
+  const show = document.getElementById("y-time2").value === "指定";
+  document.getElementById("spec-time-wrap2").classList.toggle("on", show);
+}
+
+// ★ 第1希望の日付変更時:警告チェック + 第2希望が表示中なら同期
+function onDate1Change() {
+  checkUrgentWarning();
+  const secondWrap = document.getElementById("second-choice-wrap");
+  if (secondWrap.style.display !== "none") {
+    const date1 = document.getElementById("y-date").value;
+    const date2El = document.getElementById("y-date2");
+    if (date1 && !date2El.value) {
+      date2El.value = date1;
+    }
+  }
+}
+
+// ★ 第2希望を追加
+function addSecondChoice() {
+  const wrap = document.getElementById("second-choice-wrap");
+  const btn  = document.getElementById("add-second-choice-btn");
+  wrap.style.display = "block";
+  btn.style.display = "none";
+  
+  // 第1希望の日付をコピー(時間は空欄のまま)
+  const date1 = document.getElementById("y-date").value;
+  if (date1) {
+    document.getElementById("y-date2").value = date1;
+  }
+}
+
+// ★ 第2希望を削除
+function removeSecondChoice() {
+  const wrap = document.getElementById("second-choice-wrap");
+  const btn  = document.getElementById("add-second-choice-btn");
+  wrap.style.display = "none";
+  btn.style.display = "block";
+  // 入力値クリア
+  document.getElementById("y-date2").value = "";
+  document.getElementById("y-time2").value = "";
+  document.getElementById("y-spec-time2").value = "";
+  document.getElementById("spec-time-wrap2").classList.remove("on");
+}
+
 function onMixInput(input, nextId) {
   input.value = input.value.replace(/[^0-9]/g, "");
   if (input.value.length >= 2 && nextId) {
@@ -594,6 +692,64 @@ function checkQtyWarning() {
   const qty = parseFloat(document.getElementById("y-qty").value) || 0;
   const warning = document.getElementById("qty-warning-card");
   if (qty >= 51) {
+    warning.style.display = "block";
+  } else {
+    warning.style.display = "none";
+  }
+}
+
+// ★ 直近予約(前日15時以降~翌日15時前)の警告表示
+function checkUrgentWarning() {
+  const warning = document.getElementById("urgent-warning");
+  const dateStr = document.getElementById("y-date").value;
+  const timeSel = document.getElementById("y-time").value;
+  const specTime = document.getElementById("y-spec-time").value;
+  
+  if (!dateStr || !timeSel) {
+    warning.style.display = "none";
+    return;
+  }
+  
+  // 配送/引き取り日時を Date オブジェクトに変換
+  const targetDate = new Date(dateStr + "T00:00:00");
+  if (isNaN(targetDate.getTime())) {
+    warning.style.display = "none";
+    return;
+  }
+  
+  // 実際の時間(指定の場合は specTime を使う)
+  let timeStr = timeSel;
+  if (timeSel === "指定") {
+    if (!specTime) {
+      warning.style.display = "none";
+      return;
+    }
+    timeStr = specTime;
+  }
+  
+  // 時間を分解
+  const [hh, mm] = timeStr.split(":").map(n => parseInt(n, 10) || 0);
+  
+  // 配送/引き取り日時
+  const deliveryDateTime = new Date(targetDate);
+  deliveryDateTime.setHours(hh, mm, 0, 0);
+  
+  // 「前日の15時」を計算
+  const prevDay15 = new Date(deliveryDateTime);
+  prevDay15.setDate(prevDay15.getDate() - 1);
+  prevDay15.setHours(15, 0, 0, 0);
+  
+  // 当日の15時
+  const sameDay15 = new Date(deliveryDateTime);
+  sameDay15.setHours(15, 0, 0, 0);
+  
+  // 現在時刻
+  const now = new Date();
+  
+  // 警告条件:
+  // ・現在が「前日の15時以降」
+  // ・配送/引取時間が「当日の15時前」
+  if (now >= prevDay15 && deliveryDateTime < sameDay15) {
     warning.style.display = "block";
   } else {
     warning.style.display = "none";
@@ -699,6 +855,9 @@ async function submitYoyaku() {
     deliveryDate: val("y-date"),
     deliveryTime: val("y-time"),
     specTime:    val("y-spec-time"),
+    deliveryDate2: val("y-date2"),
+    deliveryTime2: val("y-time2"),
+    specTime2:    val("y-spec-time2"),
     vehicle:     isPickup ? "" : chipVal("chips-vehicle"),
     mixNumber:   mixNumber,
     mixType:     mixType === "その他" ? mixSpec : mixType,
@@ -844,17 +1003,26 @@ function buildHistoryCard(y, i) {
   // サマリー
   const summary = `${y.quantity || ""} m³ / ${y.mix || "-"}`;
   
+  // 第2希望データ
+  const date2Str = y.deliveryDate2 ? formatHistoryDate(y.deliveryDate2) : "";
+  const time2Str = y.deliveryTime2 || "";
+  const has2 = date2Str || time2Str;
+  const secondChoiceRow = has2 ? 
+    `<div class="row"><span class="lbl" style="color:#06C755;font-weight:600;">第2希望</span><span class="val" style="color:#06C755;font-weight:600;">${esc(date2Str)} ${esc(time2Str)}</span></div>` : '';
+  
   // 詳細セクション
   const detailDelivery = isPickup ? `
     <div class="hist-section">引き取り情報</div>
     <div class="hist-grid">
       <div class="row"><span class="lbl">引き取り日</span><span class="val">${esc(dateStr)}</span></div>
       <div class="row"><span class="lbl">引き取り時間</span><span class="val">${esc(timeStr)}</span></div>
+      ${secondChoiceRow}
     </div>` : `
     <div class="hist-section">配送情報</div>
     <div class="hist-grid">
       <div class="row"><span class="lbl">配送希望日</span><span class="val">${esc(dateStr)}</span></div>
       <div class="row"><span class="lbl">納入時間</span><span class="val">${esc(timeStr)}</span></div>
+      ${secondChoiceRow}
     </div>`;
   
   const detailContent = isPickup ? `
