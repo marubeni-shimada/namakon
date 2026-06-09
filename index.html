@@ -149,6 +149,17 @@ body.is-pickup .show-on-pickup{display:block}
     </div>
   </div>
 
+  <div class="card">
+    <div class="card-title">配合計画書 <span class="req" style="font-size:10px">必須</span></div>
+    <div class="toggle-bar">
+      <button type="button" class="toggle-btn on" id="k-mixplan-none" onclick="setMixPlan('なし')">なし</button>
+      <button type="button" class="toggle-btn" id="k-mixplan-yes" onclick="setMixPlan('あり')">あり</button>
+    </div>
+    <div style="background:#FFF8DC;border-radius:6px;padding:8px 10px;font-size:11px;color:#5D4037;line-height:1.6;">
+      💡 「あり」選択時:担当営業から追ってご連絡します
+    </div>
+  </div>
+
   <div class="card" style="background:#F0FBF5;border:1.5px solid #B2DFC0;">
     <div style="display:flex;align-items:flex-start;gap:12px;">
       <span style="font-size:28px;line-height:1;">📍</span>
@@ -158,6 +169,16 @@ body.is-pickup .show-on-pickup{display:block}
           送信後にLINEチャットへ自動で戻ります。<br>
           Botのメッセージに従って位置情報を送ってください。
         </div>
+      </div>
+    </div>
+  </div>
+
+  <div class="card" style="background:#FCEBEB;border:1.5px solid #F09595;">
+    <div style="display:flex;align-items:flex-start;gap:10px;">
+      <span style="font-size:22px;line-height:1;">⚠️</span>
+      <div style="font-size:12px;color:#791F1F;line-height:1.7;font-weight:600;">
+        本システムは予約数量<strong style="font-size:13px;">50㎥以下</strong>を対象としております。<br>
+        1回当たりの予約数量が<strong style="font-size:13px;">51㎥以上</strong>は各営業担当へご連絡をお願いします。
       </div>
     </div>
   </div>
@@ -318,6 +339,7 @@ let currentTab  = "kozi";
 let selectedSite   = null;
 let selectedKanryo = null;
 let pickupType  = "配送";
+let mixPlan     = "なし";
 
 document.addEventListener("DOMContentLoaded", async () => {
   loading(true);
@@ -358,6 +380,12 @@ function switchTab(tab) {
     btn.className   = "btn-submit red";
     loadKanryoList();
   }
+}
+
+function setMixPlan(value) {
+  mixPlan = value;
+  document.getElementById("k-mixplan-none").classList.toggle("on", value === "なし");
+  document.getElementById("k-mixplan-yes").classList.toggle("on", value === "あり");
 }
 
 function setPickupType(type) {
@@ -538,6 +566,7 @@ async function submitKozi() {
     userId, siteName, company, staff,
     sitePerson: person, phone,
     address:    "",
+    mixPlan:    mixPlan,
   }, "登録しました!LINEに戻って位置情報を送ってください📍");
 }
 
