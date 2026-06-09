@@ -13,6 +13,43 @@ body{font-family:-apple-system,'Hiragino Sans','Hiragino Kaku Gothic ProN',sans-
 .header-icon{width:34px;height:34px;background:rgba(255,255,255,0.2);border-radius:8px;display:flex;align-items:center;justify-content:center;font-size:18px}
 .header-title{font-size:17px;font-weight:700;color:#fff}
 .header-sub{font-size:11px;color:rgba(255,255,255,0.8);margin-top:1px}
+.header-history-btn{background:rgba(255,255,255,0.22);border:0.5px solid rgba(255,255,255,0.4);color:#fff;padding:7px 11px;border-radius:8px;font-size:11px;font-weight:500;cursor:pointer;font-family:inherit;-webkit-tap-highlight-color:transparent;white-space:nowrap;display:flex;align-items:center;gap:3px;flex-shrink:0}
+.header-history-btn:active{opacity:.8}
+/* 履歴画面 */
+.history-overlay{display:none;position:fixed;inset:0;background:#F2F3F5;z-index:1500;overflow-y:auto;-webkit-overflow-scrolling:touch}
+.history-overlay.on{display:block}
+.history-header{background:#06C755;padding:14px 16px 12px;display:flex;align-items:center;gap:10px;position:sticky;top:0;z-index:10}
+.history-back-btn{background:rgba(255,255,255,0.22);border:0.5px solid rgba(255,255,255,0.4);color:#fff;padding:6px 12px;border-radius:8px;font-size:13px;font-weight:600;cursor:pointer;font-family:inherit;-webkit-tap-highlight-color:transparent;flex-shrink:0}
+.history-back-btn:active{opacity:.8}
+.history-title-block{flex:1;min-width:0}
+.history-title{font-size:16px;font-weight:700;color:#fff}
+.history-sub{font-size:11px;color:rgba(255,255,255,0.85);margin-top:1px}
+.history-list{padding:12px}
+.hist-card{background:#fff;border:1px solid #DDE1E5;border-radius:12px;padding:12px;margin-bottom:12px;box-shadow:0 2px 6px rgba(0,0,0,0.08),0 1px 2px rgba(0,0,0,0.04)}
+.hist-card.done{background:#F7F8FA;opacity:0.6}
+.hist-card-top{display:flex;justify-content:space-between;align-items:flex-start;gap:8px;margin-bottom:6px}
+.hist-receipt{font-size:10px;color:#888;margin-bottom:2px}
+.hist-site-name{font-size:14px;font-weight:700;color:#1A1A1A;margin-bottom:2px}
+.hist-status{font-size:10px;padding:3px 8px;border-radius:10px;font-weight:600;white-space:nowrap;border:0.5px solid transparent;flex-shrink:0}
+.hist-status.uketsuke{background:#F7F8FA;color:#888;border-color:#E0E0E0}
+.hist-status.tehai{background:#FAEEDA;color:#854F0B;border-color:#E8C97A}
+.hist-status.kakutei{background:#E1F5EE;color:#0F6E56;border-color:#A0D8C5}
+.hist-status.cancel{background:#FADBDA;color:#9B1F1F;border-color:#E89A98}
+.hist-info-row{display:flex;gap:10px;font-size:11px;color:#666;margin-bottom:6px;flex-wrap:wrap}
+.hist-pickup-badge{font-size:10px;padding:2px 7px;border-radius:8px;background:#EEEDFE;color:#534AB7;font-weight:600}
+.hist-summary{font-size:11px;color:#666;margin-bottom:8px}
+.hist-toggle{width:100%;padding:6px;background:#F7F8FA;border:0.5px solid #E5E7EA;border-radius:6px;font-size:11px;color:#555;cursor:pointer;font-family:inherit;display:flex;align-items:center;justify-content:center;gap:4px;-webkit-tap-highlight-color:transparent}
+.hist-toggle:active{background:#EAEBEE}
+.hist-detail{display:none;margin-top:10px;padding-top:10px;border-top:1px solid #EEE}
+.hist-card.open .hist-detail{display:block}
+.hist-section{font-size:10px;color:#06C755;font-weight:700;letter-spacing:0.05em;margin:10px 0 4px}
+.hist-section:first-child{margin-top:0}
+.hist-grid{font-size:11px;line-height:1.7}
+.hist-grid .row{display:flex;gap:8px}
+.hist-grid .row .lbl{color:#888;width:80px;flex-shrink:0}
+.hist-grid .row .val{color:#1A1A1A;flex:1}
+.hist-remarks{margin-top:4px;padding:8px 10px;background:#F7F8FA;border-radius:6px;font-size:11px;line-height:1.6;white-space:pre-wrap;color:#1A1A1A}
+.hist-footer-note{margin:12px;padding:10px 12px;background:#FFF8DC;border-radius:8px;font-size:11px;color:#5D4037;text-align:center;line-height:1.6}
 .tabs{display:flex;background:#fff;border-bottom:1px solid #E5E7EA;position:sticky;top:60px;z-index:99}
 .tab{flex:1;padding:13px 0;font-size:13px;font-weight:600;color:#999;background:none;border:none;border-bottom:2.5px solid transparent;cursor:pointer;font-family:inherit;transition:all .15s}
 .tab.on{color:#06C755;border-bottom-color:#06C755}
@@ -106,10 +143,11 @@ body.is-pickup .show-on-pickup{display:block}
 
 <div class="header">
   <div class="header-icon">🏗</div>
-  <div>
+  <div style="flex:1;min-width:0;">
     <div class="header-title">生コン受注</div>
     <div class="header-sub" id="header-sub">読み込み中...</div>
   </div>
+  <button class="header-history-btn" onclick="openHistory()">📋 予約履歴</button>
 </div>
 
 <div class="tabs" id="tabs">
@@ -323,6 +361,22 @@ body.is-pickup .show-on-pickup{display:block}
   <div class="card">
     <div class="card-title">完了にする現場を選択</div>
     <div id="kanryo-list"><div class="empty">読み込み中...</div></div>
+  </div>
+</div>
+
+<div class="history-overlay" id="history-overlay">
+  <div class="history-header">
+    <button class="history-back-btn" onclick="closeHistory()">← 戻る</button>
+    <div class="history-title-block">
+      <div class="history-title">📋 予約履歴</div>
+      <div class="history-sub" id="history-sub">直近50件</div>
+    </div>
+  </div>
+  <div class="history-list" id="history-list">
+    <div class="empty">読み込み中...</div>
+  </div>
+  <div class="hist-footer-note">
+    💡 変更・キャンセルはお電話または<br>LINEでご連絡ください
   </div>
 </div>
 
@@ -691,6 +745,176 @@ function toast(msg) {
   el.textContent = msg;
   el.classList.add("on");
   setTimeout(() => el.classList.remove("on"), 2300);
+}
+
+// ============= 予約履歴機能 =============
+async function openHistory() {
+  if (!userId) { toast("ユーザー情報を取得中です。少し待ってから再度お試しください"); return; }
+  document.getElementById("history-overlay").classList.add("on");
+  const list = document.getElementById("history-list");
+  list.innerHTML = '<div class="empty">読み込み中...</div>';
+  
+  try {
+    const res = await fetch(`${GAS_URL}?action=getYoyakuHistory&userId=${encodeURIComponent(userId)}`);
+    const data = await res.json();
+    renderHistory(data.yoyaku || []);
+  } catch (err) {
+    list.innerHTML = '<div class="empty">読み込みに失敗しました。<br>戻るボタンから再度お試しください。</div>';
+    console.error(err);
+  }
+}
+
+function closeHistory() {
+  document.getElementById("history-overlay").classList.remove("on");
+}
+
+function renderHistory(yoyaku) {
+  const list = document.getElementById("history-list");
+  const sub  = document.getElementById("history-sub");
+  
+  if (!yoyaku.length) {
+    sub.textContent = "0 件";
+    list.innerHTML = '<div class="empty">過去の予約はありません。</div>';
+    return;
+  }
+  
+  sub.textContent = `${yoyaku.length} 件 (直近)`;
+  list.innerHTML = yoyaku.map((y, i) => buildHistoryCard(y, i)).join("");
+}
+
+function buildHistoryCard(y, i) {
+  const isPickup = y.pickupType === "引き取り" || y.pickupType === "引取り" ||
+                   (!y.pickupType && !y.vehicle && !y.method && !y.test);
+  const statusInfo = mapStatusForCustomer(y.status);
+  const dateStr = formatHistoryDate(y.deliveryDate);
+  const timeStr = y.deliveryTime + (y.specTime ? " " + y.specTime : "");
+  const doneClass = y.siteDone ? " done" : "";
+  
+  // サマリー
+  const summary = `${y.quantity || ""} m³ / ${y.mix || "-"}`;
+  
+  // 詳細セクション
+  const detailDelivery = isPickup ? `
+    <div class="hist-section">引き取り情報</div>
+    <div class="hist-grid">
+      <div class="row"><span class="lbl">引き取り日</span><span class="val">${esc(dateStr)}</span></div>
+      <div class="row"><span class="lbl">引き取り時間</span><span class="val">${esc(timeStr)}</span></div>
+    </div>` : `
+    <div class="hist-section">配送情報</div>
+    <div class="hist-grid">
+      <div class="row"><span class="lbl">配送希望日</span><span class="val">${esc(dateStr)}</span></div>
+      <div class="row"><span class="lbl">納入時間</span><span class="val">${esc(timeStr)}</span></div>
+    </div>`;
+  
+  const detailContent = isPickup ? `
+    <div class="hist-section">内容</div>
+    <div class="hist-grid">
+      <div class="row"><span class="lbl">形状</span><span class="val">${esc(y.shape || "-")}</span></div>
+      <div class="row"><span class="lbl">数量</span><span class="val">${esc(y.quantity || "")} m³</span></div>
+      <div class="row"><span class="lbl">配合</span><span class="val">${esc(y.mix || "-")}</span></div>
+    </div>` : `
+    <div class="hist-section">配送・施工</div>
+    <div class="hist-grid">
+      <div class="row"><span class="lbl">車種</span><span class="val">${esc(y.vehicle || "-")}</span></div>
+      <div class="row"><span class="lbl">数量</span><span class="val">${esc(y.quantity || "")} m³</span></div>
+      <div class="row"><span class="lbl">配合</span><span class="val">${esc(y.mix || "-")}</span></div>
+      <div class="row"><span class="lbl">打設方法</span><span class="val">${esc(y.method || "-")}</span></div>
+      <div class="row"><span class="lbl">現場試験</span><span class="val">${esc(y.test || "-")}</span></div>
+      ${y.testCount ? `<div class="row"><span class="lbl">テストピース</span><span class="val">${esc(y.testCount)}本</span></div>` : ''}
+      ${y.cantab ? `<div class="row"><span class="lbl">カンタブ</span><span class="val">${esc(y.cantab)}</span></div>` : ''}
+    </div>`;
+  
+  return `
+    <div class="hist-card${doneClass}" id="hist-card-${i}">
+      <div class="hist-card-top">
+        <div style="flex:1;min-width:0">
+          <div class="hist-receipt">${esc(y.receipt || "")}</div>
+          <div class="hist-site-name">${esc(y.siteName || "")}${y.siteDone ? ' (完了済)' : ''}</div>
+        </div>
+        <span class="hist-status ${statusInfo.cls}">${esc(statusInfo.label)}</span>
+      </div>
+      <div class="hist-info-row">
+        <span>📅 ${esc(dateStr)} ${esc(timeStr)}</span>
+        ${isPickup ? '<span class="hist-pickup-badge">引き取り</span>' : '<span>🛻 配送</span>'}
+      </div>
+      <div class="hist-summary">${esc(summary)}</div>
+      
+      <div class="hist-detail">
+        ${detailDelivery}
+        
+        <div class="hist-section">現場情報</div>
+        <div class="hist-grid">
+          <div class="row"><span class="lbl">現場名</span><span class="val">${esc(y.siteName || "-")}</span></div>
+          <div class="row"><span class="lbl">住所</span><span class="val">${esc(y.address || "-")}</span></div>
+          <div class="row"><span class="lbl">現場担当</span><span class="val">${esc(y.sitePerson || "-")}</span></div>
+          <div class="row"><span class="lbl">電話</span><span class="val">${esc(y.phone || "-")}</span></div>
+        </div>
+        
+        ${detailContent}
+        
+        ${y.plant ? `
+          <div class="hist-section">プラント</div>
+          <div class="hist-grid">
+            <div class="row"><span class="lbl">会社</span><span class="val">${esc(y.plant)}</span></div>
+          </div>
+        ` : ''}
+        
+        ${y.remarks ? `
+          <div class="hist-section">備考</div>
+          <div class="hist-remarks">${esc(y.remarks)}</div>
+        ` : ''}
+      </div>
+      
+      <button class="hist-toggle" onclick="toggleHistoryDetail(${i})" style="margin-top:8px">
+        <span id="hist-toggle-text-${i}">詳細を見る</span>
+        <span id="hist-toggle-icon-${i}">▼</span>
+      </button>
+    </div>
+  `;
+}
+
+function toggleHistoryDetail(i) {
+  const card = document.getElementById(`hist-card-${i}`);
+  const text = document.getElementById(`hist-toggle-text-${i}`);
+  const icon = document.getElementById(`hist-toggle-icon-${i}`);
+  card.classList.toggle("open");
+  if (card.classList.contains("open")) {
+    text.textContent = "詳細を閉じる";
+    icon.textContent = "▲";
+  } else {
+    text.textContent = "詳細を見る";
+    icon.textContent = "▼";
+  }
+}
+
+// ステータスを発注者向けに変換
+function mapStatusForCustomer(status) {
+  const map = {
+    "未対応":     { label: "受付済", cls: "uketsuke" },
+    "対応中":     { label: "手配中", cls: "tehai" },
+    "顧客連絡済": { label: "確定",   cls: "kakutei" },
+    "キャンセル": { label: "キャンセル", cls: "cancel" },
+    // 旧ステータス互換
+    "予約済":     { label: "受付済", cls: "uketsuke" },
+    "確認中":     { label: "受付済", cls: "uketsuke" },
+    "確定済":     { label: "確定",   cls: "kakutei" },
+    "連絡済":     { label: "確定",   cls: "kakutei" },
+    "変更中":     { label: "手配中", cls: "tehai" },
+  };
+  return map[status] || { label: "受付済", cls: "uketsuke" };
+}
+
+function formatHistoryDate(d) {
+  if (!d) return "-";
+  try {
+    const date = new Date(d);
+    if (isNaN(date.getTime())) return String(d);
+    const weekdays = ["日", "月", "火", "水", "木", "金", "土"];
+    const wd = weekdays[date.getDay()];
+    return `${date.getMonth()+1}/${date.getDate()} (${wd})`;
+  } catch {
+    return String(d);
+  }
 }
 </script>
 </body>
