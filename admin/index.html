@@ -339,6 +339,14 @@ async function loadPlants() {
 
 function render() {
   const list = document.getElementById("list");
+  
+  // ★ 再描画前に開いているカードのreceiptを記憶
+  const openReceipts = new Set();
+  document.querySelectorAll(".card.open").forEach(card => {
+    const receiptEl = card.querySelector(".receipt");
+    if (receiptEl) openReceipts.add(receiptEl.textContent.trim());
+  });
+  
   let filtered = allYoyaku;
   
   if (currentFilter === "引き取り") {
@@ -365,6 +373,23 @@ function render() {
     const origIdx = allYoyaku.indexOf(y);
     return buildCard(y, origIdx);
   }).join("");
+  
+  // ★ 再描画後、開いていたカードを再度開く
+  if (openReceipts.size > 0) {
+    filtered.forEach((y, i) => {
+      if (openReceipts.has(String(y.receipt))) {
+        const origIdx = allYoyaku.indexOf(y);
+        const card = document.getElementById(`card-${origIdx}`);
+        const text = document.getElementById(`toggle-text-${origIdx}`);
+        const icon = document.getElementById(`toggle-icon-${origIdx}`);
+        if (card) {
+          card.classList.add("open");
+          if (text) text.textContent = "詳細を閉じる";
+          if (icon) icon.textContent = "▲";
+        }
+      }
+    });
+  }
 }
 
 function buildCard(y, idx) {
