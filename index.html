@@ -938,7 +938,7 @@ function buildHistoryCard(y, i) {
   const has2 = y.deliveryDate2 || y.deliveryTime2;
   const date1Full = `${dateStr} ${timeStr}`.trim();
   const date2Full = (y.deliveryDate2 ? formatHistoryDate(y.deliveryDate2) : "") + (y.deliveryTime2 ? " " + y.deliveryTime2 : "");
-  const label1 = (isPickup ? '引き取り希望日' : '配送希望日') + (has2 ? '(第1)' : '');
+  const label1 = has2 ? '第1希望' : (isPickup ? '引き取り希望日' : '配送希望日');
   
   // 詳細セクション
   const detailDelivery = isPickup ? `
