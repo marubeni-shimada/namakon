@@ -431,14 +431,21 @@ function buildCard(y, idx) {
       <div class="detail">
         <div class="detail-section">${pickup ? '引き取り情報' : '配送情報'}</div>
         <div class="detail-grid">
-          <div class="detail-label">${pickup ? '引き取り希望日' : '配送希望日'}</div>
-          <div class="detail-val">📅 ${esc(dateStr)}</div>
-          <div class="detail-label">${pickup ? '引き取り時間' : '納入時間'}</div>
-          <div class="detail-val">🕐 ${esc(timeStr)}${specTimeStr ? ' ' + esc(specTimeStr) : ''}</div>
-          ${(y.deliveryDate2 || y.deliveryTime2) ? `
-          <div class="detail-label" style="color:#06C755;font-weight:600;">第2希望</div>
-          <div class="detail-val" style="color:#06C755;font-weight:600;">${esc(formatDate(y.deliveryDate2))} ${esc(formatTime(y.deliveryTime2))}</div>
-          ` : ''}
+          ${(() => {
+            const has2 = y.deliveryDate2 || y.deliveryTime2;
+            const dateTimeFull = formatDateFull(y.deliveryDate) + ' ' + (timeStr || '') + (specTimeStr ? ' ' + specTimeStr : '');
+            const label1 = (pickup ? '引き取り希望日' : '配送希望日') + (has2 ? '(第1)' : '');
+            const label2 = '第2希望';
+            const date2Full = formatDateFull(y.deliveryDate2) + (y.deliveryTime2 ? ' ' + y.deliveryTime2 : '');
+            return `
+              <div class="detail-label" style="color:#06C755;font-weight:600;">${label1}</div>
+              <div class="detail-val" style="color:#06C755;font-weight:600;">📅 ${esc(dateTimeFull)}</div>
+              ${has2 ? `
+                <div class="detail-label">${label2}</div>
+                <div class="detail-val">📅 ${esc(date2Full)}</div>
+              ` : ''}
+            `;
+          })()}
         </div>
         
         <div class="detail-section">現場情報</div>
@@ -831,6 +838,9 @@ function formatDate(d) {
     return String(d);
   }
 }
+
+// formatDateと同じ(可読性のためのエイリアス)
+const formatDateFull = formatDate;
 
 // タイムスタンプ整形(M/D HH:MM)
 function formatTimestamp(d) {
