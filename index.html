@@ -935,25 +935,22 @@ function buildHistoryCard(y, i) {
   const summary = `${y.quantity || ""} m³ / ${y.mix || "-"}`;
   
   // 第2希望データ
-  const date2Str = y.deliveryDate2 ? formatHistoryDate(y.deliveryDate2) : "";
-  const time2Str = y.deliveryTime2 || "";
-  const has2 = date2Str || time2Str;
-  const secondChoiceRow = has2 ? 
-    `<div class="row"><span class="lbl" style="color:#06C755;font-weight:600;">第2希望</span><span class="val" style="color:#06C755;font-weight:600;">${esc(date2Str)} ${esc(time2Str)}</span></div>` : '';
+  const has2 = y.deliveryDate2 || y.deliveryTime2;
+  const date1Full = `${dateStr} ${timeStr}`.trim();
+  const date2Full = (y.deliveryDate2 ? formatHistoryDate(y.deliveryDate2) : "") + (y.deliveryTime2 ? " " + y.deliveryTime2 : "");
+  const label1 = (isPickup ? '引き取り希望日' : '配送希望日') + (has2 ? '(第1)' : '');
   
   // 詳細セクション
   const detailDelivery = isPickup ? `
     <div class="hist-section">引き取り情報</div>
     <div class="hist-grid">
-      <div class="row"><span class="lbl">引き取り日</span><span class="val">${esc(dateStr)}</span></div>
-      <div class="row"><span class="lbl">引き取り時間</span><span class="val">${esc(timeStr)}</span></div>
-      ${secondChoiceRow}
+      <div class="row"><span class="lbl" style="color:#06C755;font-weight:600;">${label1}</span><span class="val" style="color:#06C755;font-weight:600;">${esc(date1Full)}</span></div>
+      ${has2 ? `<div class="row"><span class="lbl">第2希望</span><span class="val">${esc(date2Full)}</span></div>` : ''}
     </div>` : `
     <div class="hist-section">配送情報</div>
     <div class="hist-grid">
-      <div class="row"><span class="lbl">配送希望日</span><span class="val">${esc(dateStr)}</span></div>
-      <div class="row"><span class="lbl">納入時間</span><span class="val">${esc(timeStr)}</span></div>
-      ${secondChoiceRow}
+      <div class="row"><span class="lbl" style="color:#06C755;font-weight:600;">${label1}</span><span class="val" style="color:#06C755;font-weight:600;">${esc(date1Full)}</span></div>
+      ${has2 ? `<div class="row"><span class="lbl">第2希望</span><span class="val">${esc(date2Full)}</span></div>` : ''}
     </div>`;
   
   const detailContent = isPickup ? `
@@ -1061,7 +1058,7 @@ function formatHistoryDate(d) {
     if (isNaN(date.getTime())) return String(d);
     const weekdays = ["日", "月", "火", "水", "木", "金", "土"];
     const wd = weekdays[date.getDay()];
-    return `${date.getMonth()+1}/${date.getDate()} (${wd})`;
+    return `${date.getFullYear()}/${date.getMonth()+1}/${date.getDate()} (${wd})`;
   } catch {
     return String(d);
   }
