@@ -75,6 +75,8 @@ body{font-family:-apple-system,'Hiragino Sans','Hiragino Kaku Gothic ProN',sans-
 
 .badge-hikitoiri{font-size:10px;padding:3px 8px;border-radius:10px;font-weight:600;background:#EEEDFE;color:#534AB7;margin-left:4px;border:0.5px solid #C0BAE0}
 .badge-chev{font-size:9px;opacity:0.7}
+.fax-mini-btn{font-size:10px;padding:4px 9px;border-radius:11px;font-weight:600;white-space:nowrap;cursor:pointer;display:inline-flex;align-items:center;gap:3px;border:0.5px solid #F0B97D;background:#FFF4E5;color:#854F0B;font-family:inherit;-webkit-tap-highlight-color:transparent}
+.fax-mini-btn:active{opacity:.8}
 
 .info-row{display:flex;gap:12px;margin-top:6px;flex-wrap:wrap;align-items:center}
 .info-item{font-size:11px;color:#666;display:flex;align-items:center;gap:3px}
@@ -427,7 +429,8 @@ function buildCard(y, idx) {
           <div class="company">${esc(y.company)}</div>
           <div class="timestamp">📥 ${esc(tsStr)}</div>
         </div>
-        <div>
+        <div style="display:flex;align-items:center;gap:6px;flex-wrap:wrap;justify-content:flex-end">
+          <button class="fax-mini-btn" onclick="openFaxModal(${idx})">📠 FAX</button>
           <span class="badge-status ${statusClass}" onclick="openStatusModal(${idx})">
             ${esc(statusLabel)}
             <span class="badge-chev">▼</span>
@@ -515,10 +518,6 @@ function buildCard(y, idx) {
           </div>
         </div>
       </div>
-      
-      <button class="toggle-btn" onclick="openFaxModal(${idx})" style="background:#FFF4E5;border-color:#F0B97D;color:#854F0B;margin-top:8px;font-weight:600;">
-        📠 FAX文面を作成
-      </button>
       
       <button class="toggle-btn" onclick="toggleDetail(${idx})">
         <span id="toggle-text-${idx}">詳細を見る</span>
