@@ -204,6 +204,19 @@ body{font-family:-apple-system,'Hiragino Sans','Hiragino Kaku Gothic ProN',sans-
   </div>
 </div>
 
+<div class="modal-overlay" id="fax-modal">
+  <div class="modal">
+    <div class="modal-title">📠 FAX文面プレビュー</div>
+    <div class="modal-sub" id="fax-modal-sub"></div>
+    <textarea id="fax-text" style="width:100%;min-height:120px;padding:10px 12px;font-size:13px;line-height:1.8;background:#F7F8FA;border:1.5px solid #E5E7EA;border-radius:8px;font-family:inherit;color:#1A1A1A;outline:none;resize:vertical;"></textarea>
+    <div style="font-size:11px;color:#5D4037;background:#FFF8DC;border-radius:8px;padding:8px 10px;line-height:1.8;margin-top:10px;">
+      コピー後、Yahoo地図で<br>① 印刷 → ② 「メッセージを表示」にチェック → ③ 欄に貼り付け(Ctrl+V) → ④ 印刷
+    </div>
+    <button class="modal-btn-ok" style="width:100%;margin-top:12px;padding:13px;border:none;border-radius:10px;font-size:15px;font-weight:600;color:#fff;background:#06C755;cursor:pointer;font-family:inherit;" onclick="copyAndOpenYahoo()">📋 コピーしてYahoo地図を開く</button>
+    <button class="modal-cancel" onclick="closeFaxModal()">閉じる</button>
+  </div>
+</div>
+
 <div class="header">
   <div class="header-left">
     <div class="header-icon">📋</div>
@@ -279,6 +292,9 @@ document.addEventListener("DOMContentLoaded", () => {
   });
   document.getElementById("plant-modal").addEventListener("click", (e) => {
     if (e.target.id === "plant-modal") closePlantModal();
+  });
+  document.getElementById("fax-modal").addEventListener("click", (e) => {
+    if (e.target.id === "fax-modal") closeFaxModal();
   });
 });
 
@@ -499,6 +515,10 @@ function buildCard(y, idx) {
           </div>
         </div>
       </div>
+      
+      <button class="toggle-btn" onclick="openFaxModal(${idx})" style="background:#FFF4E5;border-color:#F0B97D;color:#854F0B;margin-top:8px;font-weight:600;">
+        📠 FAX文面を作成
+      </button>
       
       <button class="toggle-btn" onclick="toggleDetail(${idx})">
         <span id="toggle-text-${idx}">詳細を見る</span>
@@ -881,6 +901,99 @@ function toast(msg, isError = false) {
   el.textContent = msg;
   el.className = "toast on" + (isError ? " error" : "");
   setTimeout(() => el.className = "toast" + (isError ? " error" : ""), 2500);
+}
+
+// ============= FAX文面生成 =============
+let faxCurrentIdx = null;
+
+function abbr(s){ return String(s || "").replace(/株式会社/g, "㈱"); }
+
+function faxDate(d){
+  if(!d) return "";
+  const date = new Date(d);
+  if(isNaN(date.getTime())) return String(d);
+  const w = ["日","月","火","水","木","金","土"][date.getDay()];
+  return `${date.getMonth()+1}/${date.getDate()}(${w})`;
+}
+
+function faxTime(t, spec){
+  let s = "";
+  if(/^\d{1,2}:\d{2}/.test(t || "")) s = t;
+  else if(/^\d{1,2}:\d{2}/.test(spec || "")) s = spec;
+  else s = (spec || t || "");
+  const m = String(s).match(/^(\d{1,2}):(\d{2})/);
+  if(!m) return s || "";
+  const h = parseInt(m[1],10), min = parseInt(m[2],10);
+  return min === 0 ? `${h}時` : `${h}時${min}分`;
+}
+
+function faxPhone(p){
+  const d = String(p || "").replace(/[^0-9]/g,"");
+  if(d.length === 11 && /^0[789]0/.test(d)) return `${d.slice(0,3)}-${d.slice(3,7)}-${d.slice(7)}`;
+  return p || "";
+}
+
+function buildFaxMessage(y){
+  const pickup = isPickup(y);
+  const dateStr = faxDate(y.deliveryDate);
+  const timeStr = faxTime(y.deliveryTime, y.specTime);
+  const action  = pickup ? "引き取り" : "納品";
+  const line1 = `現場名:${abbr(y.siteName)}　日時:${dateStr}${timeStr}${action}`;
+  const line2 = `配合:${y.mix || ""}　数量:${y.quantity || ""}m3　荷受人:${abbr(y.company)} ${y.sitePerson || ""}様　${faxPhone(y.phone)}`;
+  const line3 = `よろしくお願いいたします。㈱丸紅`;
+  return `${line1}\n${line2}\n${line3}`;
+}
+
+async function geocodeGSI(q){
+  const url = "https://msearch.gsi.go.jp/address-search/AddressSearch?q=" + encodeURIComponent(q);
+  const res = await fetch(url);
+  const arr = await res.json();
+  if(Array.isArray(arr) && arr.length && arr[0].geometry && arr[0].geometry.coordinates){
+    const [lon, lat] = arr[0].geometry.coordinates;
+    return { lat, lon };
+  }
+  return null;
+}
+
+function openFaxModal(idx){
+  faxCurrentIdx = idx;
+  const y = allYoyaku[idx];
+  document.getElementById("fax-modal-sub").textContent = `${y.receipt} / ${y.siteName}`;
+  document.getElementById("fax-text").value = buildFaxMessage(y);
+  document.getElementById("fax-modal").classList.add("on");
+}
+
+function closeFaxModal(){
+  document.getElementById("fax-modal").classList.remove("on");
+  faxCurrentIdx = null;
+}
+
+async function copyAndOpenYahoo(){
+  const idx = faxCurrentIdx;
+  if(idx === null) return;
+  const y = allYoyaku[idx];
+  const text = document.getElementById("fax-text").value;
+
+  // 先に空タブを開く(同期・ポップアップブロック回避)
+  const win = window.open("about:blank", "_blank");
+
+  // クリップボードにコピー
+  try { await navigator.clipboard.writeText(text); }
+  catch(e){ console.error("clipboard:", e); }
+
+  // 住所→緯度経度(GSI)→ Yahoo地図URL
+  let url = null;
+  try {
+    const geo = await geocodeGSI(y.address || y.siteName || "");
+    if(geo) url = `https://map.yahoo.co.jp/place?lat=${geo.lat}&lon=${geo.lon}&zoom=16&maptype=twoTones`;
+  } catch(e){ console.error("geocode:", e); }
+  if(!url) url = "https://map.yahoo.co.jp/search?q=" + encodeURIComponent(y.address || y.siteName || "");
+
+  if(win) win.location.href = url;
+  else window.open(url, "_blank");
+
+  toast("文面をコピーしました。Yahoo地図で貼り付け→印刷");
+  closeFaxModal();
 }
 </script>
 
