@@ -943,13 +943,26 @@ function buildFaxMessage(y){
   return `${line1}\n${line2}\n${line3}`;
 }
 
+// 住所の頭についた「日本、」「〒郵便番号」などを除去
+function cleanAddress(a){
+  return String(a || "")
+    .replace(/日本[、,\s]*/g, "")
+    .replace(/〒?\s*\d{3}-?\d{4}/g, "")
+    .replace(/[\u3000\s]+/g, " ")
+    .trim();
+}
+
+// 都道府県を抜き出す正規表現
+const PREF_RE = /(東京都|北海道|京都府|大阪府|[\u4E00-\u9FFF]{2,3}県)/;
+
 async function geocodeGSI(q){
   const url = "https://msearch.gsi.go.jp/address-search/AddressSearch?q=" + encodeURIComponent(q);
   const res = await fetch(url);
   const arr = await res.json();
   if(Array.isArray(arr) && arr.length && arr[0].geometry && arr[0].geometry.coordinates){
     const [lon, lat] = arr[0].geometry.coordinates;
-    return { lat, lon };
+    const title = (arr[0].properties && arr[0].properties.title) || "";
+    return { lat, lon, title };
   }
   return null;
 }
@@ -981,17 +994,36 @@ async function copyAndOpenYahoo(){
   catch(e){ console.error("clipboard:", e); }
 
   // 住所→緯度経度(GSI)→ Yahoo地図URL
+  const rawAddr = cleanAddress(y.address);
+  const inputPref = (rawAddr.match(PREF_RE) || [])[0] || "";
   let url = null;
-  try {
-    const geo = await geocodeGSI(y.address || y.siteName || "");
-    if(geo) url = `https://map.yahoo.co.jp/place?lat=${geo.lat}&lon=${geo.lon}&zoom=16&maptype=twoTones`;
-  } catch(e){ console.error("geocode:", e); }
-  if(!url) url = "https://map.yahoo.co.jp/search?q=" + encodeURIComponent(y.address || y.siteName || "");
+  let warnMsg = "";
+
+  // ちゃんとした住所(都道府県を含む)のときだけGSIで座標化
+  if(rawAddr && inputPref){
+    try {
+      const geo = await geocodeGSI(rawAddr);
+      if(geo){
+        const resultPref = (String(geo.title || "").match(PREF_RE) || [])[0] || "";
+        // 都道府県が一致(または判定不可)のときだけ採用。県違い=誤ジオコーディングとして弾く
+        if(!resultPref || resultPref === inputPref){
+          url = `https://map.yahoo.co.jp/place?lat=${geo.lat}&lon=${geo.lon}&zoom=16&maptype=twoTones`;
+        }
+      }
+    } catch(e){ console.error("geocode:", e); }
+  }
+
+  // 正確な座標が取れない → Yahoo側で住所検索させ、ピンは手で調整してもらう
+  if(!url){
+    const q = rawAddr || y.siteName || "";
+    url = "https://map.yahoo.co.jp/search?q=" + encodeURIComponent(q);
+    warnMsg = "(座標が取れずYahoo検索で開きました。ピンを手で調整してください)";
+  }
 
   if(win) win.location.href = url;
   else window.open(url, "_blank");
 
-  toast("文面をコピーしました。Yahoo地図で貼り付け→印刷");
+  toast("文面をコピーしました。Yahoo地図で貼り付け→印刷" + (warnMsg ? " " + warnMsg : ""));
   closeFaxModal();
 }
 </script>
