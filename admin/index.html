@@ -77,6 +77,15 @@ body{font-family:-apple-system,'Hiragino Sans','Hiragino Kaku Gothic ProN',sans-
 .badge-chev{font-size:9px;opacity:0.7}
 .fax-mini-btn{font-size:10px;padding:4px 9px;border-radius:11px;font-weight:600;white-space:nowrap;cursor:pointer;display:inline-flex;align-items:center;gap:3px;border:0.5px solid #F0B97D;background:#FFF4E5;color:#854F0B;font-family:inherit;-webkit-tap-highlight-color:transparent}
 .fax-mini-btn:active{opacity:.8}
+/* 対応表 */
+.taiouhyo-item{padding:11px 12px;margin-bottom:6px;background:#F7F8FA;border:1.5px solid #E5E7EA;border-radius:10px;display:flex;align-items:center;justify-content:space-between;gap:10px}
+.taiouhyo-item:last-child{margin-bottom:0}
+.taiouhyo-name{font-size:14px;font-weight:600;color:#1A1A1A;flex:1;min-width:0;word-break:break-all}
+.taiouhyo-note{font-size:11px;color:#888;margin-top:2px;font-weight:400}
+.taiouhyo-badge{font-size:11px;padding:4px 10px;border-radius:11px;font-weight:600;white-space:nowrap;flex-shrink:0;border:0.5px solid transparent}
+.taiouhyo-badge.both{background:#E6F1FB;color:#185FA5;border-color:#B5D4F4}
+.taiouhyo-badge.line{background:#E1F5EE;color:#0F6E56;border-color:#A0D8C5}
+.taiouhyo-badge.other{background:#F7F8FA;color:#888;border-color:#E0E0E0}
 
 .info-row{display:flex;gap:12px;margin-top:6px;flex-wrap:wrap;align-items:center}
 .info-item{font-size:11px;color:#666;display:flex;align-items:center;gap:3px}
@@ -219,6 +228,48 @@ body{font-family:-apple-system,'Hiragino Sans','Hiragino Kaku Gothic ProN',sans-
   </div>
 </div>
 
+<div class="modal-overlay" id="taiouhyo-modal">
+  <div class="modal">
+    <div class="modal-title">📇 対応表</div>
+    <div class="modal-sub" id="taiouhyo-modal-sub">連絡方法の一覧</div>
+    <div class="modal-search">
+      <input type="text" id="taiouhyo-search" placeholder="🔍 名前で検索..." oninput="filterTaiouhyo()">
+    </div>
+    <div class="modal-list" id="taiouhyo-list">
+      <div class="empty" style="padding:20px 0">読み込み中...</div>
+    </div>
+    <button class="modal-btn-ok" style="width:100%;margin-top:12px;padding:12px;border:none;border-radius:10px;font-size:15px;font-weight:600;color:#fff;background:#06C755;cursor:pointer;font-family:inherit;" onclick="openTaiouhyoEdit(null)">＋ 新規追加</button>
+    <button class="modal-cancel" onclick="closeTaiouhyoModal()">閉じる</button>
+  </div>
+</div>
+
+<div class="modal-overlay" id="taiouhyo-edit-modal">
+  <div class="modal">
+    <div class="modal-title" id="taiouhyo-edit-title">取引先を追加</div>
+    <div style="overflow-y:auto">
+      <div style="font-size:12px;font-weight:600;color:#555;margin-bottom:5px">名前(LINE名)</div>
+      <input type="text" id="te-name" placeholder="例: 田中工務店 山田"
+        style="width:100%;padding:11px 12px;font-size:15px;color:#1A1A1A;background:#F7F8FA;border:1.5px solid #E5E7EA;border-radius:8px;outline:none;font-family:inherit;-webkit-appearance:none;appearance:none;">
+
+      <div style="font-size:12px;font-weight:600;color:#555;margin:12px 0 5px">連絡方法</div>
+      <div style="display:flex;gap:8px">
+        <button type="button" class="te-method-btn" id="te-m-both" onclick="setTeMethod('電話+LINE')"
+          style="flex:1;padding:11px;border-radius:8px;font-size:14px;font-weight:600;border:1.5px solid #E0E0E0;background:#F7F8FA;color:#555;cursor:pointer;font-family:inherit;-webkit-tap-highlight-color:transparent">電話+LINE</button>
+        <button type="button" class="te-method-btn" id="te-m-line" onclick="setTeMethod('LINEのみ')"
+          style="flex:1;padding:11px;border-radius:8px;font-size:14px;font-weight:600;border:1.5px solid #E0E0E0;background:#F7F8FA;color:#555;cursor:pointer;font-family:inherit;-webkit-tap-highlight-color:transparent">LINEのみ</button>
+      </div>
+
+      <div style="font-size:12px;font-weight:600;color:#555;margin:12px 0 5px">備考(任意)</div>
+      <textarea id="te-note" placeholder="例: 朝は電話が繋がりにくい"
+        style="width:100%;min-height:60px;padding:10px 12px;font-size:14px;color:#1A1A1A;background:#F7F8FA;border:1.5px solid #E5E7EA;border-radius:8px;outline:none;font-family:inherit;resize:vertical;line-height:1.6"></textarea>
+    </div>
+
+    <button class="modal-btn-ok" style="width:100%;margin-top:14px;padding:13px;border:none;border-radius:10px;font-size:15px;font-weight:600;color:#fff;background:#06C755;cursor:pointer;font-family:inherit;" onclick="saveTaiouhyo()">💾 保存</button>
+    <button id="te-delete-btn" style="width:100%;margin-top:8px;padding:11px;border:1.5px solid #E89A98;border-radius:10px;font-size:14px;font-weight:600;color:#9B1F1F;background:#FADBDA;cursor:pointer;font-family:inherit;display:none;" onclick="deleteTaiouhyo()">🗑 削除する</button>
+    <button class="modal-cancel" onclick="closeTaiouhyoEdit()">キャンセル</button>
+  </div>
+</div>
+
 <div class="header">
   <div class="header-left">
     <div class="header-icon">📋</div>
@@ -230,6 +281,7 @@ body{font-family:-apple-system,'Hiragino Sans','Hiragino Kaku Gothic ProN',sans-
   <div style="display:flex;gap:6px;flex-wrap:wrap;justify-content:flex-end">
     <a href="https://chat.line.biz/U091f7b418cb39cea94edc012ad7b4c4d/" target="_blank" rel="noopener" class="header-btn" style="text-decoration:none;display:inline-flex;align-items:center;gap:2px">💬 LINEチャット</a>
     <a href="https://marubeni-shimada.github.io/plant-search/" target="_blank" rel="noopener" class="header-btn" style="text-decoration:none;display:inline-flex;align-items:center;gap:2px">🏭 プラント検索</a>
+    <button class="header-btn" onclick="openTaiouhyoModal()">📇 対応表</button>
     <button class="header-btn" onclick="loadList()">🔄 更新</button>
   </div>
 </div>
@@ -297,6 +349,12 @@ document.addEventListener("DOMContentLoaded", () => {
   });
   document.getElementById("fax-modal").addEventListener("click", (e) => {
     if (e.target.id === "fax-modal") closeFaxModal();
+  });
+  document.getElementById("taiouhyo-modal").addEventListener("click", (e) => {
+    if (e.target.id === "taiouhyo-modal") closeTaiouhyoModal();
+  });
+  document.getElementById("taiouhyo-edit-modal").addEventListener("click", (e) => {
+    if (e.target.id === "taiouhyo-edit-modal") closeTaiouhyoEdit();
   });
 });
 
@@ -1025,6 +1083,177 @@ async function copyAndOpenYahoo(){
 
   toast("文面をコピーしました。Yahoo地図で貼り付け→印刷" + (warnMsg ? " " + warnMsg : ""));
   closeFaxModal();
+}
+
+// ============= 対応表 =============
+let taiouhyoList = [];
+let taiouhyoLoaded = false;
+
+function taiouhyoBadgeClass(method){
+  const m = String(method || "");
+  if(m.includes("電話")) return "both";
+  if(m.includes("LINE")) return "line";
+  return "other";
+}
+
+function renderTaiouhyo(searchText){
+  const listEl = document.getElementById("taiouhyo-list");
+  const keyword = (searchText || "").toLowerCase().trim();
+
+  if(!taiouhyoList.length){
+    listEl.innerHTML = '<div class="empty" style="padding:20px 0">「取引先マスタ」シートに<br>データがありません</div>';
+    return;
+  }
+
+  const filtered = keyword
+    ? taiouhyoList.filter(t =>
+        String(t.name).toLowerCase().includes(keyword) ||
+        String(t.note || "").toLowerCase().includes(keyword))
+    : taiouhyoList;
+
+  document.getElementById("taiouhyo-modal-sub").textContent = `${filtered.length} 件`;
+
+  if(!filtered.length){
+    listEl.innerHTML = '<div class="empty" style="padding:20px 0">該当する取引先がありません</div>';
+    return;
+  }
+
+  listEl.innerHTML = filtered.map(t => `
+    <div class="taiouhyo-item" onclick="openTaiouhyoEdit(${t.row})" style="cursor:pointer">
+      <div style="flex:1;min-width:0">
+        <div class="taiouhyo-name">${esc(t.name)}</div>
+        ${t.note ? `<div class="taiouhyo-note">${esc(t.note)}</div>` : ''}
+      </div>
+      <span class="taiouhyo-badge ${taiouhyoBadgeClass(t.method)}">${esc(t.method || '未設定')}</span>
+      <span style="font-size:11px;color:#BBB;flex-shrink:0">✏️</span>
+    </div>
+  `).join("");
+}
+
+function filterTaiouhyo(){
+  renderTaiouhyo(document.getElementById("taiouhyo-search").value);
+}
+
+async function loadTaiouhyo(){
+  try {
+    const res = await fetch(`${GAS_URL}?action=getTorihikisaki`);
+    const data = await res.json();
+    taiouhyoList = data.list || [];
+    taiouhyoLoaded = true;
+    renderTaiouhyo("");
+  } catch (err) {
+    console.error("対応表取得失敗:", err);
+    document.getElementById("taiouhyo-list").innerHTML =
+      '<div class="empty" style="padding:20px 0">読み込みに失敗しました</div>';
+  }
+}
+
+function openTaiouhyoModal(){
+  document.getElementById("taiouhyo-search").value = "";
+  document.getElementById("taiouhyo-modal").classList.add("on");
+  if(taiouhyoLoaded){
+    renderTaiouhyo("");
+  } else {
+    document.getElementById("taiouhyo-list").innerHTML =
+      '<div class="empty" style="padding:20px 0">読み込み中...</div>';
+    loadTaiouhyo();
+  }
+}
+
+function closeTaiouhyoModal(){
+  document.getElementById("taiouhyo-modal").classList.remove("on");
+}
+
+// ---- 対応表: 追加・編集・削除 ----
+let teEditRow = null;
+let teMethod  = "電話+LINE";
+
+function setTeMethod(m){
+  teMethod = m;
+  const on  = "background:#06C755;border-color:#06C755;color:#fff;";
+  const off = "background:#F7F8FA;border-color:#E0E0E0;color:#555;";
+  const base = "flex:1;padding:11px;border-radius:8px;font-size:14px;font-weight:600;border:1.5px solid;cursor:pointer;font-family:inherit;-webkit-tap-highlight-color:transparent;";
+  document.getElementById("te-m-both").style.cssText = base + (m === "電話+LINE" ? on : off);
+  document.getElementById("te-m-line").style.cssText = base + (m === "LINEのみ" ? on : off);
+}
+
+function openTaiouhyoEdit(row){
+  teEditRow = row;
+  const t = row ? taiouhyoList.find(x => x.row === row) : null;
+  document.getElementById("taiouhyo-edit-title").textContent = t ? "取引先を編集" : "取引先を追加";
+  document.getElementById("te-name").value = t ? t.name : "";
+  document.getElementById("te-note").value = t ? (t.note || "") : "";
+  setTeMethod(t && t.method ? t.method : "電話+LINE");
+  document.getElementById("te-delete-btn").style.display = t ? "block" : "none";
+  document.getElementById("taiouhyo-edit-modal").classList.add("on");
+}
+
+function closeTaiouhyoEdit(){
+  document.getElementById("taiouhyo-edit-modal").classList.remove("on");
+  teEditRow = null;
+}
+
+async function saveTaiouhyo(){
+  const name = document.getElementById("te-name").value.trim();
+  const note = document.getElementById("te-note").value.trim();
+  if(!name){ toast("名前を入力してください", true); return; }
+
+  showLoading("保存中...");
+  try {
+    const res = await fetch(GAS_URL, {
+      method: "POST",
+      headers: { "Content-Type": "text/plain" },
+      body: JSON.stringify({
+        action: "saveTorihikisaki",
+        row: teEditRow || "",
+        name: name,
+        method: teMethod,
+        note: note,
+      }),
+    });
+    const result = await res.json();
+    if(result.status === "ok"){
+      toast(teEditRow ? "更新しました" : "追加しました");
+      closeTaiouhyoEdit();
+      await loadTaiouhyo();
+    } else {
+      toast("保存失敗: " + (result.message || "不明"), true);
+    }
+  } catch (err) {
+    toast("通信エラー", true);
+    console.error(err);
+  } finally {
+    hideLoading();
+  }
+}
+
+async function deleteTaiouhyo(){
+  if(!teEditRow) return;
+  const t = taiouhyoList.find(x => x.row === teEditRow);
+  const ok = await customConfirm(`「${t ? t.name : ""}」を削除しますか?\nこの操作は取り消せません。`);
+  if(!ok) return;
+
+  showLoading("削除中...");
+  try {
+    const res = await fetch(GAS_URL, {
+      method: "POST",
+      headers: { "Content-Type": "text/plain" },
+      body: JSON.stringify({ action: "deleteTorihikisaki", row: teEditRow }),
+    });
+    const result = await res.json();
+    if(result.status === "ok"){
+      toast("削除しました");
+      closeTaiouhyoEdit();
+      await loadTaiouhyo();
+    } else {
+      toast("削除失敗: " + (result.message || "不明"), true);
+    }
+  } catch (err) {
+    toast("通信エラー", true);
+    console.error(err);
+  } finally {
+    hideLoading();
+  }
 }
 </script>
 
