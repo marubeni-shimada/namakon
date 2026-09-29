@@ -1013,15 +1013,16 @@ function cleanAddress(a){
 // 都道府県を抜き出す正規表現
 const PREF_RE = /(東京都|北海道|京都府|大阪府|[\u4E00-\u9FFF]{2,3}県)/;
 
+// ★ 住所→座標(Yahooジオコーダ経由 / GASの geocode 窓口を叩く)
+//   ※ 関数名は従来の geocodeGSI のまま(呼び出し側を変えずに中身だけ差し替え)
 async function geocodeGSI(q){
-  const url = "https://msearch.gsi.go.jp/address-search/AddressSearch?q=" + encodeURIComponent(q);
-  const res = await fetch(url);
-  const arr = await res.json();
-  if(Array.isArray(arr) && arr.length && arr[0].geometry && arr[0].geometry.coordinates){
-    const [lon, lat] = arr[0].geometry.coordinates;
-    const title = (arr[0].properties && arr[0].properties.title) || "";
-    return { lat, lon, title };
-  }
+  try {
+    const res  = await fetch(`${GAS_URL}?action=geocode&q=` + encodeURIComponent(q));
+    const data = await res.json();
+    if(data && data.status === "ok" && data.lat && data.lon){
+      return { lat: data.lat, lon: data.lon, title: data.title || "" };
+    }
+  } catch(e){ console.error("geocode:", e); }
   return null;
 }
 
@@ -1051,20 +1052,20 @@ async function copyAndOpenYahoo(){
   try { await navigator.clipboard.writeText(text); }
   catch(e){ console.error("clipboard:", e); }
 
-  // 住所→緯度経度(GSI)→ Yahoo地図URL
+  // 住所→緯度経度(Yahooジオコーダ)→ Yahoo地図URL
   const rawAddr = cleanAddress(y.address);
   const inputPref = (rawAddr.match(PREF_RE) || [])[0] || "";
   let url = null;
   let warnMsg = "";
 
-  // ちゃんとした住所(都道府県を含む)のときだけGSIで座標化
-  if(rawAddr && inputPref){
+  // ちゃんとした住所(都道府県を含む)のときだけ座標化を試す
+  if(rawAddr){
     try {
       const geo = await geocodeGSI(rawAddr);
       if(geo){
         const resultPref = (String(geo.title || "").match(PREF_RE) || [])[0] || "";
         // 都道府県が一致(または判定不可)のときだけ採用。県違い=誤ジオコーディングとして弾く
-        if(!resultPref || resultPref === inputPref){
+        if(!inputPref || !resultPref || resultPref === inputPref){
           url = `https://map.yahoo.co.jp/place?lat=${geo.lat}&lon=${geo.lon}&zoom=16&maptype=twoTones`;
         }
       }
