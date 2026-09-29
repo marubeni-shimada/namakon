@@ -1052,31 +1052,38 @@ async function copyAndOpenYahoo(){
   try { await navigator.clipboard.writeText(text); }
   catch(e){ console.error("clipboard:", e); }
 
-  // 住所→緯度経度(Yahooジオコーダ)→ Yahoo地図URL
-  const rawAddr = cleanAddress(y.address);
-  const inputPref = (rawAddr.match(PREF_RE) || [])[0] || "";
   let url = null;
   let warnMsg = "";
 
-  // ちゃんとした住所(都道府県を含む)のときだけ座標化を試す
-  if(rawAddr){
-    try {
-      const geo = await geocodeGSI(rawAddr);
-      if(geo){
-        const resultPref = (String(geo.title || "").match(PREF_RE) || [])[0] || "";
-        // 都道府県が一致(または判定不可)のときだけ採用。県違い=誤ジオコーディングとして弾く
-        if(!inputPref || !resultPref || resultPref === inputPref){
-          url = `https://map.yahoo.co.jp/place?lat=${geo.lat}&lon=${geo.lon}&zoom=16&maptype=twoTones`;
-        }
-      }
-    } catch(e){ console.error("geocode:", e); }
+  // ★ 最優先: LINE登録時のピン座標があれば、それをそのまま使う(住所変換しない=一番正確)
+  if(y.lat && y.lon){
+    url = `https://map.yahoo.co.jp/place?lat=${y.lat}&lon=${y.lon}&zoom=16&maptype=twoTones`;
   }
 
-  // 正確な座標が取れない → Yahoo側で住所検索させ、ピンは手で調整してもらう
+  // 座標が無い現場(過去に登録した分など) → 従来通り住所から座標化を試す
   if(!url){
-    const q = rawAddr || y.siteName || "";
-    url = "https://map.yahoo.co.jp/search?q=" + encodeURIComponent(q);
-    warnMsg = "(座標が取れずYahoo検索で開きました。ピンを手で調整してください)";
+    const rawAddr = cleanAddress(y.address);
+    const inputPref = (rawAddr.match(PREF_RE) || [])[0] || "";
+    // ちゃんとした住所(都道府県を含む)のときだけ座標化を試す
+    if(rawAddr){
+      try {
+        const geo = await geocodeGSI(rawAddr);
+        if(geo){
+          const resultPref = (String(geo.title || "").match(PREF_RE) || [])[0] || "";
+          // 都道府県が一致(または判定不可)のときだけ採用。県違い=誤ジオコーディングとして弾く
+          if(!inputPref || !resultPref || resultPref === inputPref){
+            url = `https://map.yahoo.co.jp/place?lat=${geo.lat}&lon=${geo.lon}&zoom=16&maptype=twoTones`;
+          }
+        }
+      } catch(e){ console.error("geocode:", e); }
+    }
+
+    // 正確な座標が取れない → Yahoo側で住所検索させ、ピンは手で調整してもらう
+    if(!url){
+      const q = rawAddr || y.siteName || "";
+      url = "https://map.yahoo.co.jp/search?q=" + encodeURIComponent(q);
+      warnMsg = "(座標が取れずYahoo検索で開きました。ピンを手で調整してください)";
+    }
   }
 
   if(win) win.location.href = url;
