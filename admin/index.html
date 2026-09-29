@@ -995,7 +995,9 @@ function buildFaxMessage(y){
   const dateStr = faxDate(y.deliveryDate);
   const timeStr = faxTime(y.deliveryTime, y.specTime);
   const action  = pickup ? "引き取り" : "納品";
-  const line1 = `現場名:${abbr(y.siteName)}　日時:${dateStr}${timeStr}${action}`;
+  const addr    = cleanAddress(y.address);
+  const siteWithAddr = abbr(y.siteName) + (addr ? `（${addr}）` : "");
+  const line1 = `現場名:${siteWithAddr}　日時:${dateStr}${timeStr}${action}`;
   const line2 = `配合:${y.mix || ""}　数量:${y.quantity || ""}m3　荷受人:${abbr(y.company)} ${y.sitePerson || ""}様　${faxPhone(y.phone)}`;
   const line3 = `よろしくお願いいたします。㈱丸紅`;
   return `${line1}\n${line2}\n${line3}`;
